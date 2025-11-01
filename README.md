@@ -14,7 +14,7 @@ Dự án này là phần triển khai cho môn **Nhập môn AI**, bao gồm:
 ## 🗂️ Cấu trúc dự án
 
 ```
-project_01/
+algorithm/
 ├── algorithms/          # Code nguồn của 8 thuật toán
 │   ├── pso.py          # Particle Swarm Optimization
 │   ├── abc.py          # Artificial Bee Colony
@@ -30,11 +30,13 @@ project_01/
 ├── experiments/         # Scripts chạy thí nghiệm
 │   ├── run_rastrigin.py
 │   └── run_knapsack.py
-├── visualizations/      # Scripts vẽ biểu đồ
+├── visualizations/      # Scripts vẽ biểu đồ (Python files only)
 │   ├── plot_convergence.py
 │   ├── plot_robustness.py
 │   └── plot_rastrigin_3d.py
-├── results/            # Kết quả thí nghiệm (CSV files)
+├── results/            # Kết quả thí nghiệm (CSV & PNG files)
+│   ├── *.csv          # Dữ liệu thô và tổng hợp
+│   └── *.png          # Biểu đồ visualizations
 └── README.md
 ```
 
@@ -73,7 +75,6 @@ pip install numpy matplotlib
 
 ```bash
 # Chạy thí nghiệm cho Rastrigin Function
-cd project_01
 python experiments/run_rastrigin.py
 
 # Chạy thí nghiệm cho Knapsack Problem
@@ -89,14 +90,15 @@ python visualizations/plot_convergence.py
 # Vẽ biểu đồ độ ổn định (robustness - box plots)
 python visualizations/plot_robustness.py
 
-# Vẽ biểu đồ 3D của hàm Rastrigin
+# Vẽ biểu đồ heatmap & contour của hàm Rastrigin
 python visualizations/plot_rastrigin_3d.py
 ```
 
 ### Bước 3: Xem kết quả
 
-- **Dữ liệu thô**: Trong thư mục `results/` (các file CSV)
-- **Biểu đồ**: Trong thư mục `visualizations/` (các file PNG)
+- **Tất cả kết quả**: Trong thư mục `results/`
+  - Dữ liệu CSV (raw data và summary)
+  - Biểu đồ PNG (visualizations)
 
 ## 📈 Thí nghiệm được thực hiện
 
@@ -114,7 +116,9 @@ python visualizations/plot_rastrigin_3d.py
 
 ## 📊 Kết quả đầu ra
 
-### Files CSV trong `results/`:
+### Trong thư mục `results/`:
+
+**CSV Files:**
 - `rastrigin_summary.csv` - Thống kê tổng hợp (mean, std, time)
 - `rastrigin_convergence.csv` - Dữ liệu hội tụ theo iteration
 - `rastrigin_raw_fitness.csv` - Dữ liệu thô từ 20 lần chạy
@@ -122,7 +126,7 @@ python visualizations/plot_rastrigin_3d.py
 - `knapsack_convergence.csv` - Dữ liệu hội tụ
 - `knapsack_raw_fitness.csv` - Dữ liệu thô
 
-### Biểu đồ trong `visualizations/`:
+**PNG Files (Visualizations):**
 - `convergence_rastrigin_D10.png` - Convergence cho D=10
 - `convergence_rastrigin_D30.png` - Convergence cho D=30
 - `convergence_knapsack_N20.png` - Convergence cho N=20
@@ -131,7 +135,7 @@ python visualizations/plot_rastrigin_3d.py
 - `robustness_rastrigin_D30.png` - Box plot cho D=30
 - `robustness_knapsack_N20.png` - Box plot cho N=20
 - `robustness_knapsack_N50.png` - Box plot cho N=50
-- `rastrigin_3d_surface.png` - 3D surface và contour plot
+- `rastrigin_3d_surface.png` - Heatmap và contour plot
 - `rastrigin_cross_sections.png` - Cross-section plots
 
 ## 🎯 Rastrigin Function
