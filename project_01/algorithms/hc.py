@@ -1,0 +1,69 @@
+import numpy as np
+
+def hill_climbing(obj_func, bounds, n_dim, max_iter, step_size=0.1, **kwargs):
+    """
+    Hill Climbing algorithm for continuous optimization.
+    
+    Parameters:
+    -----------
+    obj_func : function
+        Objective function to minimize
+    bounds : array-like
+        Bounds for each dimension [[min, max], ...]
+    n_dim : int
+        Number of dimensions
+    max_iter : int
+        Maximum number of iterations
+    step_size : float
+        Step size for generating neighbors
+    
+    Returns:
+    --------
+    best_solution : ndarray
+        Best solution found
+    best_fitness : float
+        Best fitness value
+    history : list
+        History of best fitness values
+    """
+    # Initialize bounds
+    min_b, max_b = np.asarray(bounds).T
+    
+    # Initialize random solution
+    current_solution = min_b + (max_b - min_b) * np.random.rand(n_dim)
+    current_fitness = obj_func(current_solution)
+    
+    # Track best solution
+    best_solution = current_solution.copy()
+    best_fitness = current_fitness
+    
+    # History tracking
+    history = [best_fitness]
+    
+    # Hill climbing main loop
+    for iteration in range(max_iter):
+        # Generate neighbor by adding random perturbation
+        perturbation = np.random.randn(n_dim) * step_size * (max_b - min_b)
+        neighbor_solution = current_solution + perturbation
+        
+        # Apply bounds
+        neighbor_solution = np.clip(neighbor_solution, min_b, max_b)
+        
+        # Evaluate neighbor
+        neighbor_fitness = obj_func(neighbor_solution)
+        
+        # Accept if better (for minimization)
+        if neighbor_fitness < current_fitness:
+            current_solution = neighbor_solution
+            current_fitness = neighbor_fitness
+            
+            # Update best
+            if current_fitness < best_fitness:
+                best_solution = current_solution.copy()
+                best_fitness = current_fitness
+        
+        # Record history
+        history.append(best_fitness)
+    
+    return best_solution, best_fitness, history
+
