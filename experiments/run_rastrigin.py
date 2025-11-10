@@ -64,12 +64,14 @@ for D in DIMENSIONS:
         for r in range(N_RUNS):
             start_time = time.time()
             
-            # Xử lý input khác nhau cho HC
+            # All algorithms now use the same signature
+            # Pass bounds as context_or_bounds and problem_type='continuous'
             if algo_name == 'HC':
-                sol, fit, hist = algo_func(rastrigin, bounds, D, MAX_ITER, **ALGO_PARAMS['hc'])
+                sol, fit, hist = algo_func(rastrigin, bounds, D, POP_SIZE, MAX_ITER, 
+                                          problem_type='continuous', **ALGO_PARAMS['hc'])
             else:
                 sol, fit, hist = algo_func(rastrigin, bounds, D, POP_SIZE, MAX_ITER, 
-                                          **ALGO_PARAMS[algo_name.lower()])
+                                          problem_type='continuous', **ALGO_PARAMS[algo_name.lower()])
             
             elapsed = time.time() - start_time
             run_times.append(elapsed)

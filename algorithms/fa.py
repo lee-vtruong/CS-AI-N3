@@ -1,6 +1,6 @@
 import numpy as np
 
-def firefly_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
+def firefly_algorithm(obj_func, context_or_bounds, n_dim, pop_size, max_iter, problem_type='continuous', alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
     """
     Firefly Algorithm (FA).
     
@@ -8,14 +8,17 @@ def firefly_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, be
     -----------
     obj_func : function
         Objective function to minimize
-    bounds : array-like
-        Bounds for each dimension [[min, max], ...]
+    context_or_bounds : array-like or dict
+        - If 'continuous': bounds for each dimension [[min, max], ...]
+        - If 'discrete': context dict with problem data
     n_dim : int
         Number of dimensions
     pop_size : int
         Population size (number of fireflies)
     max_iter : int
         Maximum number of iterations
+    problem_type : str
+        'continuous' (default) or 'discrete'
     alpha : float
         Randomization parameter (step size)
     beta0 : float
@@ -32,14 +35,29 @@ def firefly_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, be
     history : list
         History of best fitness values
     """
-    # Initialize bounds
-    min_b, max_b = np.asarray(bounds).T
+    # Initialize bounds (for continuous) or context (for discrete)
+    if problem_type == 'continuous':
+        bounds = context_or_bounds
+        min_b, max_b = np.asarray(bounds).T
+    else:
+        context = context_or_bounds
+        # For discrete, we'll use arbitrary bounds for initialization
+        min_b = np.full(n_dim, -5.0)
+        max_b = np.full(n_dim, 5.0)
     
     # Initialize firefly positions
     fireflies = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
     
     # Evaluate fitness (light intensity)
-    fitness = np.array([obj_func(f) for f in fireflies])
+    if problem_type == 'discrete':
+        # Evaluate initial fitness with binarization
+        # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+        fitness = np.array([
+            -obj_func((1 / (1 + np.exp(-f)) > 0.5).astype(int), context) 
+            for f in fireflies
+        ])
+    else:
+        fitness = np.array([obj_func(f) for f in fireflies])
     
     # Find best firefly
     best_idx = np.argmin(fitness)
@@ -69,11 +87,17 @@ def firefly_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, be
                     fireflies[i] = fireflies[i] + beta * (fireflies[j] - fireflies[i]) + \
                                    alpha_t * (np.random.rand(n_dim) - 0.5)
                     
-                    # Apply bounds
-                    fireflies[i] = np.clip(fireflies[i], min_b, max_b)
-                    
-                    # Evaluate new position
-                    fitness[i] = obj_func(fireflies[i])
+                    # Evaluate new position based on problem type
+                    if problem_type == 'discrete':
+                        # Apply sigmoid to convert continuous to binary
+                        probabilities = 1 / (1 + np.exp(-fireflies[i]))
+                        binary_solution = (probabilities > 0.5).astype(int)
+                        # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+                        fitness[i] = -obj_func(binary_solution, context)
+                    else:  # 'continuous'
+                        # Apply bounds
+                        fireflies[i] = np.clip(fireflies[i], min_b, max_b)
+                        fitness[i] = obj_func(fireflies[i])
                     
                     # Update global best
                     if fitness[i] < best_fitness:
@@ -82,6 +106,13 @@ def firefly_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, be
         
         # Record history
         history.append(best_fitness)
+    
+    # Return binary solution for discrete problems, continuous for continuous
+    if problem_type == 'discrete':
+        probabilities = 1 / (1 + np.exp(-best_solution))
+        best_solution = (probabilities > 0.5).astype(int)
+        # Return negated fitness (convert back to maximization)
+        best_fitness = -best_fitness
     
     return best_solution, best_fitness, history
 

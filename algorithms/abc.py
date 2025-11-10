@@ -1,6 +1,6 @@
 import numpy as np
 
-def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwargs):
+def abc_algorithm(obj_func, context_or_bounds, n_dim, pop_size, max_iter, problem_type='continuous', limit=10, **kwargs):
     """
     Artificial Bee Colony (ABC) algorithm.
     
@@ -8,14 +8,17 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
     -----------
     obj_func : function
         Objective function to minimize
-    bounds : array-like
-        Bounds for each dimension [[min, max], ...]
+    context_or_bounds : array-like or dict
+        - If 'continuous': bounds for each dimension [[min, max], ...]
+        - If 'discrete': context dict with problem data
     n_dim : int
         Number of dimensions
     pop_size : int
         Population size (number of food sources)
     max_iter : int
         Maximum number of iterations
+    problem_type : str
+        'continuous' (default) or 'discrete'
     limit : int
         Abandonment limit (number of trials before abandoning a source)
     
@@ -28,12 +31,27 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
     history : list
         History of best fitness values
     """
-    # Initialize bounds
-    min_b, max_b = np.asarray(bounds).T
+    # Initialize bounds (for continuous) or context (for discrete)
+    if problem_type == 'continuous':
+        bounds = context_or_bounds
+        min_b, max_b = np.asarray(bounds).T
+    else:
+        context = context_or_bounds
+        # For discrete, we'll use arbitrary bounds for initialization
+        min_b = np.full(n_dim, -5.0)
+        max_b = np.full(n_dim, 5.0)
     
     # Initialize food sources (solutions)
     food_sources = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
-    fitness = np.array([obj_func(sol) for sol in food_sources])
+    if problem_type == 'discrete':
+        # Evaluate initial fitness with binarization
+        # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+        fitness = np.array([
+            -obj_func((1 / (1 + np.exp(-sol)) > 0.5).astype(int), context) 
+            for sol in food_sources
+        ])
+    else:
+        fitness = np.array([obj_func(sol) for sol in food_sources])
     
     # Trial counters for each food source
     trial = np.zeros(pop_size)
@@ -61,11 +79,17 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
             new_solution = food_sources[i].copy()
             new_solution[j] = food_sources[i][j] + phi * (food_sources[i][j] - food_sources[k][j])
             
-            # Apply bounds
-            new_solution = np.clip(new_solution, min_b, max_b)
-            
-            # Evaluate new solution
-            new_fitness = obj_func(new_solution)
+            # Evaluate new solution based on problem type
+            if problem_type == 'discrete':
+                # Apply sigmoid to convert continuous to binary
+                probabilities = 1 / (1 + np.exp(-new_solution))
+                binary_solution = (probabilities > 0.5).astype(int)
+                # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+                new_fitness = -obj_func(binary_solution, context)
+            else:  # 'continuous'
+                # Apply bounds
+                new_solution = np.clip(new_solution, min_b, max_b)
+                new_fitness = obj_func(new_solution)
             
             # Greedy selection
             if new_fitness < fitness[i]:
@@ -102,11 +126,17 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
             new_solution = food_sources[i].copy()
             new_solution[j] = food_sources[i][j] + phi * (food_sources[i][j] - food_sources[k][j])
             
-            # Apply bounds
-            new_solution = np.clip(new_solution, min_b, max_b)
-            
-            # Evaluate new solution
-            new_fitness = obj_func(new_solution)
+            # Evaluate new solution based on problem type
+            if problem_type == 'discrete':
+                # Apply sigmoid to convert continuous to binary
+                probabilities = 1 / (1 + np.exp(-new_solution))
+                binary_solution = (probabilities > 0.5).astype(int)
+                # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+                new_fitness = -obj_func(binary_solution, context)
+            else:  # 'continuous'
+                # Apply bounds
+                new_solution = np.clip(new_solution, min_b, max_b)
+                new_fitness = obj_func(new_solution)
             
             # Greedy selection
             if new_fitness < fitness[i]:
@@ -127,7 +157,14 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
             if trial[i] > limit:
                 # Generate new random solution
                 food_sources[i] = min_b + (max_b - min_b) * np.random.rand(n_dim)
-                fitness[i] = obj_func(food_sources[i])
+                if problem_type == 'discrete':
+                    # Evaluate with binarization
+                    probabilities = 1 / (1 + np.exp(-food_sources[i]))
+                    binary_solution = (probabilities > 0.5).astype(int)
+                    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+                    fitness[i] = -obj_func(binary_solution, context)
+                else:
+                    fitness[i] = obj_func(food_sources[i])
                 trial[i] = 0
                 
                 # Update global best if necessary
@@ -137,6 +174,13 @@ def abc_algorithm(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwarg
         
         # Record history
         history.append(best_fitness)
+    
+    # Return binary solution for discrete problems, continuous for continuous
+    if problem_type == 'discrete':
+        probabilities = 1 / (1 + np.exp(-best_solution))
+        best_solution = (probabilities > 0.5).astype(int)
+        # Return negated fitness (convert back to maximization)
+        best_fitness = -best_fitness
     
     return best_solution, best_fitness, history
 

@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from problems.knapsack import generate_knapsack_data, knapsack_fitness
-from algorithms import aco, ga, a_star
+from algorithms import aco, ga, a_star, pso, abc, fa, cs, hc
 
 # --- Định nghĩa thông số chung ---
 N_RUNS = 20  # Số lần chạy để lấy trung bình
@@ -18,13 +18,23 @@ MAX_ITER = 1000
 
 # Tham số riêng
 ALGO_PARAMS = {
-    'aco': {'alpha': 1.0, 'beta': 2.0, 'rho': 0.5},
-    'ga': {'problem_type': 'discrete', 'crossover_rate': 0.8, 'mutation_rate': 0.05}
+    'pso': {'w': 0.8, 'c1': 2.0, 'c2': 2.0},
+    'abc': {'limit': 10},
+    'fa': {'alpha': 0.5, 'beta0': 1.0, 'gamma': 0.95},
+    'cs': {'pa': 0.25, 'beta': 1.5},
+    'ga': {'crossover_rate': 0.8, 'mutation_rate': 0.05},
+    'hc': {'step_size': 0.1},
+    'aco': {'alpha': 1.0, 'beta': 2.0, 'rho': 0.5}
 }
 
 ALGOS = {
-    'ACO': aco.aco,
+    'PSO': pso.pso,
+    'ABC': abc.abc_algorithm,
+    'FA': fa.firefly_algorithm,
+    'CS': cs.cuckoo_search,
     'GA': ga.genetic_algorithm,
+    'HC': hc.hill_climbing,
+    'ACO': aco.aco,
     'A*': a_star.a_star_search
 }
 
@@ -71,14 +81,15 @@ for n_items in N_ITEMS_LIST:
             if algo_name == 'A*':
                 sol, fit = algo_func(context)
                 hist = [fit]  # A* doesn't have history, just final result
-            elif algo_name == 'GA':
-                # GA needs n_dim parameter
-                sol, fit, hist = algo_func(knapsack_fitness, context, n_items, POP_SIZE, MAX_ITER,
-                                           **ALGO_PARAMS[algo_name.lower()])
-            else:
+            elif algo_name == 'ACO':
                 # ACO doesn't need n_dim
                 sol, fit, hist = algo_func(knapsack_fitness, context, POP_SIZE, MAX_ITER,
                                            **ALGO_PARAMS[algo_name.lower()])
+            else:
+                # All other algorithms (PSO, ABC, FA, CS, GA, HC) use the new signature
+                # with problem_type='discrete' and context as context_or_bounds
+                sol, fit, hist = algo_func(knapsack_fitness, context, n_items, POP_SIZE, MAX_ITER,
+                                           problem_type='discrete', **ALGO_PARAMS[algo_name.lower()])
 
             elapsed = time.time() - start_time
             run_times.append(elapsed)
