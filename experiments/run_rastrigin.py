@@ -3,6 +3,7 @@ import time
 import csv
 import sys
 import os
+import tracemalloc
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -60,8 +61,11 @@ for D in DIMENSIONS:
         run_histories = []
         run_fitnesses = []
         run_times = []
+        run_memories = []
         
         for r in range(N_RUNS):
+            # Start memory tracing
+            tracemalloc.start()
             start_time = time.time()
             
             # All algorithms use _continuous functions
@@ -73,9 +77,15 @@ for D in DIMENSIONS:
                                           **ALGO_PARAMS[algo_name.lower()])
             
             elapsed = time.time() - start_time
+            # Get peak memory usage (in MB)
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+            peak_mem_mb = peak / 1024 / 1024  # Convert bytes to MB
+            
             run_times.append(elapsed)
             run_fitnesses.append(fit)
             run_histories.append(hist)
+            run_memories.append(peak_mem_mb)
             
             if (r + 1) % 5 == 0:
                 print(f"  Run {r+1}/{N_RUNS} completed. Best fitness: {fit:.4f}")
@@ -86,14 +96,16 @@ for D in DIMENSIONS:
         min_fit = np.min(run_fitnesses)
         max_fit = np.max(run_fitnesses)
         avg_time = np.mean(run_times)
+        avg_peak_mem = np.mean(run_memories)
         
         print(f"[{algo_name}] Completed!")
         print(f"  Avg Fitness: {avg_fit:.4f} ± {std_fit:.4f}")
         print(f"  Min Fitness: {min_fit:.4f}")
         print(f"  Max Fitness: {max_fit:.4f}")
         print(f"  Avg Time: {avg_time:.4f}s")
+        print(f"  Avg Peak Memory: {avg_peak_mem:.4f} MB")
         
-        results_summary.append([algo_name, D, avg_fit, std_fit, min_fit, max_fit, avg_time])
+        results_summary.append([algo_name, D, avg_fit, std_fit, min_fit, max_fit, avg_time, avg_peak_mem])
         
         # Lưu lịch sử hội tụ trung bình
         # Pad histories to same length if needed
@@ -126,7 +138,7 @@ summary_file = os.path.join(results_dir, 'rastrigin_summary.csv')
 with open(summary_file, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['Algorithm', 'Dimension', 'Avg_Fitness', 'Std_Dev_Fitness', 
-                     'Min_Fitness', 'Max_Fitness', 'Avg_Time'])
+                     'Min_Fitness', 'Max_Fitness', 'Avg_Time', 'Avg_Peak_Mem_MB'])
     writer.writerows(results_summary)
 print(f"✓ Summary saved to: {summary_file}")
 
