@@ -22,17 +22,17 @@ ALGO_PARAMS = {
     'abc': {'limit': 10},
     'fa': {'alpha': 0.5, 'beta0': 1.0, 'gamma': 0.95},
     'cs': {'pa': 0.25, 'beta': 1.5},
-    'ga': {'problem_type': 'continuous', 'crossover_rate': 0.8,     'mutation_rate': 0.02},
+    'ga': {'crossover_rate': 0.8, 'mutation_rate': 0.02},
     'hc': {'step_size': 0.1}
 }
 
 ALGOS = {
-    'PSO': pso.pso,
-    'ABC': abc.abc_algorithm,
-    'FA': fa.firefly_algorithm,
-    'CS': cs.cuckoo_search,
-    'GA': ga.genetic_algorithm,
-    'HC': hc.hill_climbing
+    'PSO': pso.pso_continuous,
+    'ABC': abc.abc_algorithm_continuous,
+    'FA': fa.firefly_algorithm_continuous,
+    'CS': cs.cuckoo_search_continuous,
+    'GA': ga.genetic_algorithm_continuous,
+    'HC': hc.hill_climbing_continuous
 }
 
 # --- Script chạy thí nghiệm ---
@@ -64,14 +64,13 @@ for D in DIMENSIONS:
         for r in range(N_RUNS):
             start_time = time.time()
             
-            # All algorithms now use the same signature
-            # Pass bounds as context_or_bounds and problem_type='continuous'
+            # All algorithms use _continuous functions
+            # HC doesn't need pop_size parameter
             if algo_name == 'HC':
-                sol, fit, hist = algo_func(rastrigin, bounds, D, POP_SIZE, MAX_ITER, 
-                                          problem_type='continuous', **ALGO_PARAMS['hc'])
+                sol, fit, hist = algo_func(rastrigin, bounds, D, MAX_ITER, **ALGO_PARAMS['hc'])
             else:
                 sol, fit, hist = algo_func(rastrigin, bounds, D, POP_SIZE, MAX_ITER, 
-                                          problem_type='continuous', **ALGO_PARAMS[algo_name.lower()])
+                                          **ALGO_PARAMS[algo_name.lower()])
             
             elapsed = time.time() - start_time
             run_times.append(elapsed)

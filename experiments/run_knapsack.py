@@ -28,12 +28,12 @@ ALGO_PARAMS = {
 }
 
 ALGOS = {
-    'PSO': pso.pso,
-    'ABC': abc.abc_algorithm,
-    'FA': fa.firefly_algorithm,
-    'CS': cs.cuckoo_search,
-    'GA': ga.genetic_algorithm,
-    'HC': hc.hill_climbing,
+    'PSO': pso.pso_discrete,
+    'ABC': abc.abc_algorithm_discrete,
+    'FA': fa.firefly_algorithm_discrete,
+    'CS': cs.cuckoo_search_discrete,
+    'GA': ga.genetic_algorithm_discrete,
+    'HC': hc.hill_climbing_discrete,
     'ACO': aco.aco,
     'A*': a_star.a_star_search
 }
@@ -85,11 +85,14 @@ for n_items in N_ITEMS_LIST:
                 # ACO doesn't need n_dim
                 sol, fit, hist = algo_func(knapsack_fitness, context, POP_SIZE, MAX_ITER,
                                            **ALGO_PARAMS[algo_name.lower()])
+            elif algo_name == 'HC':
+                # HC doesn't need pop_size parameter
+                sol, fit, hist = algo_func(knapsack_fitness, context, n_items, MAX_ITER,
+                                           **ALGO_PARAMS[algo_name.lower()])
             else:
-                # All other algorithms (PSO, ABC, FA, CS, GA, HC) use the new signature
-                # with problem_type='discrete' and context as context_or_bounds
+                # All other algorithms (PSO, ABC, FA, CS, GA) use _discrete functions
                 sol, fit, hist = algo_func(knapsack_fitness, context, n_items, POP_SIZE, MAX_ITER,
-                                           problem_type='discrete', **ALGO_PARAMS[algo_name.lower()])
+                                           **ALGO_PARAMS[algo_name.lower()])
 
             elapsed = time.time() - start_time
             run_times.append(elapsed)

@@ -130,30 +130,26 @@ def mutate_discrete(solution, mutation_rate):
     
     return mutated
 
-# --- Main GA Function ---
+# --- Main GA Functions ---
 
-def genetic_algorithm(obj_func, context_or_bounds, n_dim, pop_size, max_iter, 
-                      problem_type='continuous', 
-                      crossover_rate=0.8, mutation_rate=0.01, 
-                      **kwargs):
+def genetic_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, 
+                                 crossover_rate=0.8, mutation_rate=0.01, 
+                                 **kwargs):
     """
-    Genetic Algorithm (GA) - supports both continuous and discrete problems.
+    Genetic Algorithm (GA) for continuous optimization.
     
     Parameters:
     -----------
     obj_func : function
-        Objective function to optimize
-    context_or_bounds : array-like or dict
-        - For continuous: bounds [[min, max], ...]
-        - For discrete: context dict with problem data
+        Objective function to minimize
+    bounds : array-like
+        Bounds for each dimension [[min, max], ...]
     n_dim : int
-        Number of dimensions/items
+        Number of dimensions
     pop_size : int
         Population size
     max_iter : int
         Maximum number of iterations (generations)
-    problem_type : str
-        'continuous' or 'discrete'
     crossover_rate : float
         Crossover probability
     mutation_rate : float
@@ -162,112 +158,138 @@ def genetic_algorithm(obj_func, context_or_bounds, n_dim, pop_size, max_iter,
     Returns:
     --------
     best_solution : ndarray
-        Best solution found
+        Best solution found (real-valued vector)
     best_fitness : float
         Best fitness value
     history : list
         History of best fitness values
     """
-    history = []
+    bounds = np.asarray(bounds)
+    min_b, max_b = bounds.T
     
-    if problem_type == 'continuous':
-        # --- Continuous optimization (minimization) ---
-        bounds = np.asarray(context_or_bounds)
-        min_b, max_b = bounds.T
-        
-        # Initialize population
-        population = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
-        fitness = np.array([obj_func(ind) for ind in population])
-        
-        # Find best
-        best_idx = np.argmin(fitness)
-        best_fitness = fitness[best_idx]
-        best_solution = population[best_idx].copy()
-        history.append(best_fitness)
-        
-        # Evolution loop
-        for generation in range(max_iter):
-            # Selection
-            parents = tournament_selection(population, fitness, k=3, maximize=False)
-            
-            # Crossover and Mutation
-            offspring = []
-            for i in range(0, pop_size, 2):
-                if i + 1 < pop_size:
-                    p1, p2 = parents[i], parents[i + 1]
-                    o1, o2 = crossover_continuous(p1, p2, crossover_rate, bounds)
-                    o1 = mutate_continuous(o1, mutation_rate, bounds)
-                    o2 = mutate_continuous(o2, mutation_rate, bounds)
-                    offspring.append(o1)
-                    offspring.append(o2)
-                else:
-                    o1 = mutate_continuous(parents[i], mutation_rate, bounds)
-                    offspring.append(o1)
-            
-            # Evaluate offspring
-            offspring = np.array(offspring[:pop_size])
-            offspring_fitness = np.array([obj_func(ind) for ind in offspring])
-            
-            # Replacement (generational)
-            population = offspring
-            fitness = offspring_fitness
-            
-            # Update best
-            current_best_idx = np.argmin(fitness)
-            if fitness[current_best_idx] < best_fitness:
-                best_fitness = fitness[current_best_idx]
-                best_solution = population[current_best_idx].copy()
-            
-            history.append(best_fitness)
+    # Initialize population
+    population = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
+    fitness = np.array([obj_func(ind) for ind in population])
     
-    else:  # 'discrete'
-        # --- Discrete optimization (maximization) ---
-        context = context_or_bounds
+    # Find best
+    best_idx = np.argmin(fitness)
+    best_fitness = fitness[best_idx]
+    best_solution = population[best_idx].copy()
+    history = [best_fitness]
+    
+    # Evolution loop
+    for generation in range(max_iter):
+        # Selection
+        parents = tournament_selection(population, fitness, k=3, maximize=False)
         
-        # Initialize population (binary)
-        population = np.random.randint(0, 2, (pop_size, n_dim))
-        fitness = np.array([obj_func(ind, context) for ind in population])
+        # Crossover and Mutation
+        offspring = []
+        for i in range(0, pop_size, 2):
+            if i + 1 < pop_size:
+                p1, p2 = parents[i], parents[i + 1]
+                o1, o2 = crossover_continuous(p1, p2, crossover_rate, bounds)
+                o1 = mutate_continuous(o1, mutation_rate, bounds)
+                o2 = mutate_continuous(o2, mutation_rate, bounds)
+                offspring.append(o1)
+                offspring.append(o2)
+            else:
+                o1 = mutate_continuous(parents[i], mutation_rate, bounds)
+                offspring.append(o1)
         
-        # Find best
-        best_idx = np.argmax(fitness)
-        best_fitness = fitness[best_idx]
-        best_solution = population[best_idx].copy()
+        # Evaluate offspring
+        offspring = np.array(offspring[:pop_size])
+        offspring_fitness = np.array([obj_func(ind) for ind in offspring])
+        
+        # Replacement (generational)
+        population = offspring
+        fitness = offspring_fitness
+        
+        # Update best
+        current_best_idx = np.argmin(fitness)
+        if fitness[current_best_idx] < best_fitness:
+            best_fitness = fitness[current_best_idx]
+            best_solution = population[current_best_idx].copy()
+        
         history.append(best_fitness)
-        
-        # Evolution loop
-        for generation in range(max_iter):
-            # Selection
-            parents = tournament_selection(population, fitness, k=3, maximize=True)
-            
-            # Crossover and Mutation
-            offspring = []
-            for i in range(0, pop_size, 2):
-                if i + 1 < pop_size:
-                    p1, p2 = parents[i], parents[i + 1]
-                    o1, o2 = crossover_discrete(p1, p2, crossover_rate)
-                    o1 = mutate_discrete(o1, mutation_rate)
-                    o2 = mutate_discrete(o2, mutation_rate)
-                    offspring.append(o1)
-                    offspring.append(o2)
-                else:
-                    o1 = mutate_discrete(parents[i], mutation_rate)
-                    offspring.append(o1)
-            
-            # Ensure integer type for binary solutions
-            offspring = np.array(offspring[:pop_size], dtype=int)
-            offspring_fitness = np.array([obj_func(ind, context) for ind in offspring])
-            
-            # Replacement (generational)
-            population = offspring
-            fitness = offspring_fitness
-            
-            # Update best
-            current_best_idx = np.argmax(fitness)
-            if fitness[current_best_idx] > best_fitness:
-                best_fitness = fitness[current_best_idx]
-                best_solution = population[current_best_idx].copy()
-            
-            history.append(best_fitness)
     
     return best_solution, best_fitness, history
 
+
+def genetic_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, 
+                               crossover_rate=0.8, mutation_rate=0.01, 
+                               **kwargs):
+    """
+    Genetic Algorithm (GA) for discrete optimization.
+    
+    Parameters:
+    -----------
+    obj_func : function
+        Objective function to maximize
+    context : dict
+        Context dict with problem data
+    n_dim : int
+        Number of dimensions/items
+    pop_size : int
+        Population size
+    max_iter : int
+        Maximum number of iterations (generations)
+    crossover_rate : float
+        Crossover probability
+    mutation_rate : float
+        Mutation probability
+    
+    Returns:
+    --------
+    best_solution : ndarray
+        Best solution found (binary vector)
+    best_fitness : float
+        Best fitness value
+    history : list
+        History of best fitness values
+    """
+    # Initialize population (binary)
+    population = np.random.randint(0, 2, (pop_size, n_dim))
+    fitness = np.array([obj_func(ind, context) for ind in population])
+    
+    # Find best
+    best_idx = np.argmax(fitness)
+    best_fitness = fitness[best_idx]
+    best_solution = population[best_idx].copy()
+    history = [best_fitness]
+    
+    # Evolution loop
+    for generation in range(max_iter):
+        # Selection
+        parents = tournament_selection(population, fitness, k=3, maximize=True)
+        
+        # Crossover and Mutation
+        offspring = []
+        for i in range(0, pop_size, 2):
+            if i + 1 < pop_size:
+                p1, p2 = parents[i], parents[i + 1]
+                o1, o2 = crossover_discrete(p1, p2, crossover_rate)
+                o1 = mutate_discrete(o1, mutation_rate)
+                o2 = mutate_discrete(o2, mutation_rate)
+                offspring.append(o1)
+                offspring.append(o2)
+            else:
+                o1 = mutate_discrete(parents[i], mutation_rate)
+                offspring.append(o1)
+        
+        # Ensure integer type for binary solutions
+        offspring = np.array(offspring[:pop_size], dtype=int)
+        offspring_fitness = np.array([obj_func(ind, context) for ind in offspring])
+        
+        # Replacement (generational)
+        population = offspring
+        fitness = offspring_fitness
+        
+        # Update best
+        current_best_idx = np.argmax(fitness)
+        if fitness[current_best_idx] > best_fitness:
+            best_fitness = fitness[current_best_idx]
+            best_solution = population[current_best_idx].copy()
+        
+        history.append(best_fitness)
+    
+    return best_solution, best_fitness, history
