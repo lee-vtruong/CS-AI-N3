@@ -87,111 +87,98 @@ def pso_continuous(obj_func, bounds, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c
 
 def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2=2.0, **kwargs):
     """
-    Particle Swarm Optimization (PSO) algorithm for discrete optimization.
+    Binary Particle Swarm Optimization (BPSO) for discrete optimization.
     
-    Parameters:
-    -----------
-    obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+    Implements the original BPSO algorithm (Kennedy & Eberhart, 1997).
+    Particles move in continuous velocity space and transfer to binary space via sigmoid.
+    
+    Parameters
+    ----------
+    obj_func : callable
+        Objective function (maximize). Signature: obj_func(binary_solution, context)
     context : dict
-        Context dict with problem data
+        Problem context with 'weights', 'values', 'capacity', etc.
     n_dim : int
-        Number of dimensions
+        Number of dimensions (items for knapsack).
     pop_size : int
-        Population size (number of particles)
+        Population size (number of particles).
     max_iter : int
-        Maximum number of iterations
-    w : float
-        Inertia weight
-    c1 : float
-        Cognitive coefficient
-    c2 : float
-        Social coefficient
+        Maximum number of iterations.
+    w : float, default=0.8
+        Inertia weight for velocity update.
+    c1 : float, default=2.0
+        Cognitive coefficient (personal best attraction).
+    c2 : float, default=2.0
+        Social coefficient (global best attraction).
     
-    Returns:
-    --------
-    best_solution : ndarray
-        Best solution found (binary vector)
+    Returns
+    -------
+    best_solution : np.ndarray
+        Best binary solution found (0/1 vector).
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Fitness value of best solution (maximization, not negated).
     history : list
-        History of best fitness values
+        Best fitness at each iteration.
+    
+    References
+    ----------
+    Kennedy, J., & Eberhart, R. C. (1997).
+    A new optimizer using particle swarm theory.
+    Proceedings of the sixth international symposium on micro machine and human science.
     """
-    # For discrete, we'll use arbitrary bounds for initialization
-    # The actual solution will be binarized before evaluation
-    min_b = np.full(n_dim, -5.0)
-    max_b = np.full(n_dim, 5.0)
+    # Initialize velocity space (continuous, unbounded)
+    velocities = np.zeros((pop_size, n_dim))
     
-    # Initialize particles positions and velocities
-    particles = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
-    velocities = np.random.randn(pop_size, n_dim)
+    # Initialize particles as binary {0, 1}
+    particles = np.random.randint(0, 2, size=(pop_size, n_dim))
     
-    # Initialize personal best positions and fitness
-    # Keep positions as continuous for velocity updates, but evaluate fitness on binary for discrete
-    personal_best_positions = particles.copy()
-    # Evaluate initial fitness with binarization (numerically stable sigmoid)
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-    def stable_sigmoid_binarize(x):
-        # Clip x to prevent overflow in exp
-        x_clipped = np.clip(x, -500, 500)
-        probs = 1 / (1 + np.exp(-x_clipped))
-        return (probs > 0.5).astype(int)
-    
-    personal_best_fitness = np.array([
-        -obj_func(stable_sigmoid_binarize(p), context) 
-        for p in particles
-    ])
+    # Initialize personal best (binary solutions and fitness)
+    personal_best_particles = particles.copy()
+    personal_best_fitness = np.array([obj_func(p, context) for p in particles])
     
     # Initialize global best
-    best_idx = np.argmin(personal_best_fitness)
-    global_best_position = personal_best_positions[best_idx].copy()
+    best_idx = np.argmax(personal_best_fitness)
+    global_best_particle = personal_best_particles[best_idx].copy()
     global_best_fitness = personal_best_fitness[best_idx]
     
     # History tracking
     history = [global_best_fitness]
     
-    # PSO main loop
+    # Helper function: sigmoid transfer function
+    def sigmoid_transfer(v):
+        """Numerically stable sigmoid S(v) = 1 / (1 + exp(-v))"""
+        v_clipped = np.clip(v, -500, 500)
+        return 1.0 / (1.0 + np.exp(-v_clipped))
+    
+    # BPSO main loop
     for iteration in range(max_iter):
         for i in range(pop_size):
-            # Update velocity
-            r1, r2 = np.random.rand(2)
-            cognitive = c1 * r1 * (personal_best_positions[i] - particles[i])
-            social = c2 * r2 * (global_best_position - particles[i])
+            # Update velocity: v = w*v + c1*rand()*(pbest-x) + c2*rand()*(gbest-x)
+            r1 = np.random.rand(n_dim)
+            r2 = np.random.rand(n_dim)
+            cognitive = c1 * r1 * (personal_best_particles[i].astype(float) - particles[i].astype(float))
+            social = c2 * r2 * (global_best_particle.astype(float) - particles[i].astype(float))
             velocities[i] = w * velocities[i] + cognitive + social
             
-            # Update position
-            particles[i] = particles[i] + velocities[i]
+            # Apply sigmoid transfer function and stochastic binarization
+            # x_i(t+1) = 1 if rand() < S(v_i(t+1)), else 0
+            transfer_probs = sigmoid_transfer(velocities[i])
+            particles[i] = (np.random.rand(n_dim) < transfer_probs).astype(int)
             
-            # Apply sigmoid to convert continuous to binary (numerically stable)
-            # Clip x to prevent overflow in exp
-            x = particles[i]
-            x_clipped = np.clip(x, -500, 500)
-            probabilities = 1 / (1 + np.exp(-x_clipped))
-            binary_solution = (probabilities > 0.5).astype(int)
-            # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-            fitness = -obj_func(binary_solution, context)
+            # Evaluate fitness
+            fitness = obj_func(particles[i], context)
             
             # Update personal best
-            if fitness < personal_best_fitness[i]:
+            if fitness > personal_best_fitness[i]:
                 personal_best_fitness[i] = fitness
-                # Store continuous position for velocity updates
-                personal_best_positions[i] = particles[i].copy()
+                personal_best_particles[i] = particles[i].copy()
                 
                 # Update global best
-                if fitness < global_best_fitness:
+                if fitness > global_best_fitness:
                     global_best_fitness = fitness
-                    global_best_position = particles[i].copy()
+                    global_best_particle = particles[i].copy()
         
         # Record history
         history.append(global_best_fitness)
     
-    # Return binary solution (numerically stable sigmoid)
-    # Clip x to prevent overflow in exp
-    x = global_best_position
-    x_clipped = np.clip(x, -500, 500)
-    probabilities = 1 / (1 + np.exp(-x_clipped))
-    best_solution = (probabilities > 0.5).astype(int)
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -global_best_fitness
-    
-    return best_solution, best_fitness, history
+    return global_best_particle, global_best_fitness, history

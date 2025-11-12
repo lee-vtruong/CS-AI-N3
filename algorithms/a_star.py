@@ -1,173 +1,134 @@
-import numpy as np
 import heapq
+import numpy as np
 
 class Node:
-    """Node for A* search tree."""
-    
-    def __init__(self, level, value, weight, solution, bound):
-        """
-        Parameters:
-        -----------
-        level : int
-            Current item index being considered
-        value : float
-            Current total value
-        weight : float
-            Current total weight
-        solution : list
-            Current solution (binary decisions)
-        bound : float
-            Upper bound on maximum value achievable from this node
-        """
+    """A search node: level, g (value so far), weight, solution, h (heuristic), f = g + h."""
+    def __init__(self, level, g, weight, solution):
         self.level = level
-        self.value = value
+        self.g = g
         self.weight = weight
         self.solution = solution
-        self.bound = bound
-    
-    def __lt__(self, other):
-        # For max-heap behavior in min-heap (negate for priority)
-        # We want to explore nodes with higher bound first
-        return self.bound > other.bound
+        self.h = 0.0
+        self.f = 0.0
 
-def calculate_bound(node, n_items, capacity, weights, values):
-    """
-    Calculate upper bound on maximum value achievable from this node.
-    Uses fractional knapsack relaxation.
-    """
+    def __lt__(self, other):
+        """Max-heap: return True if self.f > other.f (higher f = higher priority)."""
+        # Max-heap (prioritize nodes with higher f value)
+        return self.f > other.f
+
+
+def calculate_heuristic(node, weights, values, capacity, n_items):
+    """Calculate h(x): heuristic estimate of remaining value using fractional knapsack."""
     if node.weight >= capacity:
-        return 0
-    
-    bound = node.value
+        return 0.0  # Cannot add anything more
+
+    h = 0.0
     total_weight = node.weight
-    level = node.level + 1
-    
-    # Calculate value-to-weight ratios for remaining items
-    remaining_items = []
-    for i in range(level, n_items):
-        if weights[i] > 0:
-            ratio = values[i] / weights[i]
-            remaining_items.append((ratio, values[i], weights[i], i))
-    
-    # Sort by ratio (descending)
-    remaining_items.sort(reverse=True)
-    
-    # Add items greedily (fractional allowed for bound)
-    for ratio, value, weight, idx in remaining_items:
-        if total_weight + weight <= capacity:
-            total_weight += weight
-            bound += value
-        else:
-            # Add fraction of item
-            remaining_capacity = capacity - total_weight
-            bound += ratio * remaining_capacity
-            break
-    
-    return bound
+    idx = node.level + 1
+
+    # Greedily add complete items if they fit
+    while idx < n_items and total_weight + weights[idx] <= capacity:
+        total_weight += weights[idx]
+        h += values[idx]
+        idx += 1
+
+    # If space remains, add fractional value of next item
+    if idx < n_items and weights[idx] > 0:
+        remain = capacity - total_weight
+        h += values[idx] * (remain / weights[idx])
+
+    return h
+
 
 def a_star_search(context, heuristic_func=None):
-    """
-    A* Search for Knapsack problem.
-    
-    Parameters:
-    -----------
-    context : dict
-        Problem context with 'weights', 'values', 'capacity'
-    heuristic_func : function (optional)
-        Custom heuristic function (not used in current implementation,
-        using fractional knapsack bound instead)
-    
-    Returns:
-    --------
-    best_solution : ndarray
-        Best solution found (binary vector)
-    best_fitness : float
-        Best fitness value (total value)
-    """
+    """A* search for 0/1 Knapsack using fractional knapsack heuristic."""
     weights = context['weights']
     values = context['values']
     capacity = context['capacity']
     n_items = len(weights)
-    
-    # Initialize best solution
-    best_solution = np.zeros(n_items, dtype=int)
-    best_value = 0
-    
-    # Priority queue (min-heap, but we'll negate priorities for max behavior)
-    pq = []
-    
-    # Create root node
-    root = Node(level=-1, value=0, weight=0, solution=[], 
-                bound=calculate_bound(Node(-1, 0, 0, [], 0), n_items, capacity, weights, values))
-    
-    heapq.heappush(pq, root)
-    
-    nodes_explored = 0
-    max_nodes = 100000  # Limit to prevent infinite loops
-    
-    # A* search
-    while pq and nodes_explored < max_nodes:
-        current = heapq.heappop(pq)
-        nodes_explored += 1
-        
-        # If bound is less than current best, skip this branch
-        if current.bound <= best_value:
-            continue
-        
-        # If we've processed all items
-        if current.level == n_items - 1:
-            continue
-        
-        next_level = current.level + 1
-        
-        # --- Branch 1: Include next item ---
-        if current.weight + weights[next_level] <= capacity:
-            solution_include = current.solution + [1]
-            value_include = current.value + values[next_level]
-            weight_include = current.weight + weights[next_level]
-            
-            # Update best if this is a complete solution
-            if next_level == n_items - 1:
-                if value_include > best_value:
-                    best_value = value_include
-                    best_solution = np.array(solution_include + [0] * (n_items - len(solution_include)), dtype=int)
-            else:
-                # Create new node
-                node_include = Node(next_level, value_include, weight_include, 
-                                  solution_include, 0)
-                node_include.bound = calculate_bound(node_include, n_items, capacity, 
-                                                     weights, values)
-                
-                # Add to queue if promising
-                if node_include.bound > best_value:
-                    heapq.heappush(pq, node_include)
-                
-                # Update best if better
-                if value_include > best_value:
-                    best_value = value_include
-                    temp_solution = solution_include + [0] * (n_items - len(solution_include))
-                    best_solution = np.array(temp_solution, dtype=int)
-        
-        # --- Branch 2: Exclude next item ---
-        solution_exclude = current.solution + [0]
-        value_exclude = current.value
-        weight_exclude = current.weight
-        
-        # Update best if this is a complete solution
-        if next_level == n_items - 1:
-            if value_exclude > best_value:
-                best_value = value_exclude
-                best_solution = np.array(solution_exclude + [0] * (n_items - len(solution_exclude)), dtype=int)
-        else:
-            # Create new node
-            node_exclude = Node(next_level, value_exclude, weight_exclude, 
-                              solution_exclude, 0)
-            node_exclude.bound = calculate_bound(node_exclude, n_items, capacity, 
-                                                 weights, values)
-            
-            # Add to queue if promising
-            if node_exclude.bound > best_value:
-                heapq.heappush(pq, node_exclude)
-    
-    return best_solution, best_value
 
+    # Handle edge cases
+    if n_items == 0 or capacity <= 0:
+        return np.zeros(0, dtype=int), 0
+
+    # Sort items by value/weight ratio (greedy heuristic)
+    items = sorted([(v / w, v, w, i) for i, (v, w) in enumerate(zip(values, weights)) if w > 0], reverse=True)
+    sorted_values = [v for _, v, _, _ in items]
+    sorted_weights = [w for _, _, w, _ in items]
+    original_idx = [i for _, _, _, i in items]
+    n_sorted = len(sorted_weights)
+
+    # If no valid items (all weights == 0), return empty solution
+    if n_sorted == 0:
+        return np.zeros(n_items, dtype=int), 0
+
+    # Initialize
+    best_value = 0
+    best_solution = [0] * n_items
+
+    pq = []
+    counter = 0
+    max_nodes = 100_000
+
+    # Create root node: calculate h then f = g + h
+    root = Node(level=-1, g=0, weight=0, solution=[0] * n_items)
+    root.h = calculate_heuristic(root, sorted_weights, sorted_values, capacity, n_sorted)
+    root.f = root.g + root.h
+    heapq.heappush(pq, (-root.f, counter, root))
+    counter += 1
+
+    nodes_explored = 0
+
+    # A* search loop
+    while pq and nodes_explored < max_nodes:
+        _, _, current = heapq.heappop(pq)
+        nodes_explored += 1
+
+        # Prune if f(x) <= best_value
+        if current.f <= best_value:
+            continue
+        next_level = current.level + 1
+        # Stop if we've considered all items
+        if next_level >= n_sorted:
+            continue
+
+        item_weight = sorted_weights[next_level]
+        item_value = sorted_values[next_level]
+        orig_idx = original_idx[next_level]
+
+        # Branch 1: Include item
+        if current.weight + item_weight <= capacity:
+            new_solution = current.solution.copy()
+            new_solution[orig_idx] = 1
+
+            child = Node(next_level, current.g + item_value, current.weight + item_weight, new_solution)
+            child.h = calculate_heuristic(child, sorted_weights, sorted_values, capacity, n_sorted)
+            child.f = child.g + child.h
+
+            # Update best solution
+            if child.g > best_value:
+                best_value = child.g
+                best_solution = new_solution.copy()
+
+            # Add to queue if promising
+            if child.f > best_value:
+                heapq.heappush(pq, (-child.f, counter, child))
+                counter += 1
+
+        # Branch 2: Exclude item
+        new_solution = current.solution.copy()
+        new_solution[orig_idx] = 0
+
+        child = Node(next_level, current.g, current.weight, new_solution)
+        child.h = calculate_heuristic(child, sorted_weights, sorted_values, capacity, n_sorted)
+        child.f = child.g + child.h
+
+        if child.g > best_value:
+            best_value = child.g
+            best_solution = new_solution.copy()
+
+        if child.f > best_value:
+            heapq.heappush(pq, (-child.f, counter, child))
+            counter += 1
+
+    return np.array(best_solution, dtype=int), best_value

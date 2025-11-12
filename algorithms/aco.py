@@ -33,8 +33,8 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
         History of best fitness values
     """
 
-    weights = np.array(context['weights'])
-    values = np.array(context['values'])
+    weights = context['weights']
+    values = context['values']
     capacity = context['capacity']
     n_items = len(weights)
 
@@ -54,13 +54,13 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
             sol = np.zeros(n_items, dtype=int)
             available_items = np.ones(n_items, dtype=bool)
             current_weight = 0.0
-            # Construct solution
-            while np.any(available_items):
-                # Tìm items CÓ THỂ thêm vào (không vượt capacity)
+            # Construct solution by greedy selection
+            while available_items.any():
+                # Find feasible items (can be added without exceeding capacity)
                 feasible_items = np.where((available_items) & (current_weight + weights <= capacity))[0]
                 
-                # Nếu không còn item nào thêm được → dừng
-                if  len(feasible_items) == 0:
+                # If no feasible items remain, stop
+                if not feasible_items.any():
                     break
 
                 prob = (pheromone[feasible_items] ** alpha) * (eta[feasible_items] ** beta)
@@ -92,103 +92,123 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
         
     return best_solution, best_fitness, history
 
-def aco_continuous(obj_func, bounds, n_dim, archive_size, pop_size, max_iter, q=0.1, xi=0.85, **kwargs):
+
+def acor_continuous(
+    fitness_func,
+    bounds,
+    n_dim,
+    pop_size,
+    max_iter,
+    Q=1.0,
+    k_neighbors=3,
+    xi=0.85,
+    seed=None
+):
     """
-    Ant Colony Optimization for continuous domains (ACOr) based on the paper:
-    "Ant Colony Optimization for Continuous Domains" by Socha and Dorigo (2008).
-    
-    This implementation assumes minimization of the objective function.
-    Handles unconstrained problems, but clips solutions to bounds if provided.
-    
-    Parameters:
-    -----------
-    obj_func : function
-        Objective function to minimize (takes a solution vector as input).
-    bounds : list of tuples
-        List of (min, max) for each dimension (n_dim elements).
+    Ant Colony Optimization for Continuous Domains (ACOr).
+
+    Implements the standard ACOr algorithm (Socha & Dorigo, 2008).
+    Maintains an archive of solutions and samples new solutions using
+    Gaussian kernels centered at archive members, with adaptive standard
+    deviation based on neighbor distances.
+
+    Parameters
+    ----------
+    fitness_func : callable
+        Objective function with signature: fitness_func(solution)
+        where solution is a 1D np.ndarray of length n_dim.
+    bounds : np.ndarray
+        2D array of shape (n_dim, 2) defining lower and upper bounds:
+        [[lb1, ub1], [lb2, ub2], ...].
     n_dim : int
-        Number of dimensions (variables).
-    archive_size : int
-        Size of the solution archive (k in the paper, recommended k >= n_dim).
+        Dimensionality of the problem.
     pop_size : int
-        Number of ants (m in the paper).
+        Size of the solution archive (number of ants).
     max_iter : int
         Maximum number of iterations.
-    q : float
-        Parameter controlling the weight distribution (small q prefers best solutions).
-    xi : float
-        Parameter for standard deviation (similar to evaporation rate, higher xi -> slower convergence).
-    
-    Returns:
-    --------
-    best_solution : ndarray
-        Best solution found.
+    Q : float, default=1.0
+        Controls selection probability: weight = Q / rank.
+    k_neighbors : int, default=3
+        Number of nearest neighbors used to compute adaptive sigma.
+    xi : float, default=0.85
+        Scaling factor for standard deviation (xi ∈ (0,1)).
+    seed : int, optional
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    best_solution : np.ndarray
+        Best solution found in the search space.
     best_fitness : float
-        Best fitness value.
-    history : list
-        History of best fitness values per iteration.
+        Fitness of the best solution.
+    history : list of float
+        Best fitness value at each iteration.
+
+    References
+    ----------
+    Socha, K., & Dorigo, M. (2008). Ant colony optimization for continuous domains.
+    European Journal of Operational Research, 185(3), 1155–1173.
+
+    Notes
+    -----
+    - Archive is updated by combining old and new solutions and keeping top `pop_size`.
+    - Sigma is computed as: xi * mean(distance to k nearest neighbors).
+    - Highly effective for multimodal continuous functions like Rastrigin.
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     bounds = np.array(bounds)
     lb, ub = bounds[:, 0], bounds[:, 1]
 
-    # Khởi tạo archive
-    archive = np.random.uniform(lb, ub, size=(archive_size, n_dim))
-    fitness = np.array([obj_func(sol) for sol in archive])
-    sorted_idx = np.argsort(fitness)
-    archive = archive[sorted_idx]
-    fitness = fitness[sorted_idx]
+    # Initialize solution archive
+    archive = np.random.uniform(lb, ub, size=(pop_size, n_dim))
+    archive_fits = np.array([fitness_func(sol) for sol in archive])
 
-    history = []
-    best_fitness = fitness[0]
-    best_solution = archive[0].copy()
+    best_fitness = np.max(archive_fits)
+    best_solution = archive[np.argmax(archive_fits)].copy()
+    history = [best_fitness]
 
-    # Tính weights một lần (giống MATLAB)
-    ranks = np.arange(1, archive_size + 1)
-    w = (1 / (q * archive_size * np.sqrt(2 * np.pi))) * np.exp(- (ranks - 1)**2 / (2 * q**2 * archive_size**2))
-    p = w / w.sum()  # Xác suất chọn solution l
-
-    for iter in range(max_iter):
+    for _ in range(max_iter):
         new_solutions = []
         new_fitnesses = []
 
         for _ in range(pop_size):
-            # Chọn một solution l từ archive theo p
-            l = np.random.choice(archive_size, p=p)
+            # Select solution from archive with probability proportional to 1/rank
+            ranks = np.arange(1, pop_size + 1)
+            weights = Q / ranks
+            weights /= weights.sum()
+            idx = np.random.choice(pop_size, p=weights)
+            mu = archive[idx]
 
-            sol = np.zeros(n_dim)
-            for i in range(n_dim):
-                mu = archive[l, i]
+            # Compute adaptive standard deviation (sigma)
+            dists = np.linalg.norm(archive - mu, axis=1)
+            dists[idx] = np.inf  # exclude self
+            nearest_dists = np.partition(dists, k_neighbors - 1)[:k_neighbors]
+            sigma = xi * np.mean(nearest_dists)
+            sigma = max(sigma, 1e-8)
 
-                # Tính sigma_i^l = xi * avg |s_i^e - s_i^l| ∀ e ≠ l
-                if archive_size > 1:
-                    distances = np.abs(archive[:, i] - mu)
-                    sigma = xi * np.sum(distances) / (archive_size - 1)
-                else:
-                    sigma = xi * (ub[i] - lb[i])  # fallback
+            # Sample new solution from Gaussian
+            sol = np.clip(np.random.normal(mu, sigma), lb, ub)
+            fit = fitness_func(sol)
 
-                sol[i] = np.random.normal(mu, sigma)
-            
-            sol = np.clip(sol, lb, ub)
-            fit = obj_func(sol)
             new_solutions.append(sol)
             new_fitnesses.append(fit)
 
-            if fit < best_fitness:
+            # Update global best
+            if fit > best_fitness:
                 best_fitness = fit
                 best_solution = sol.copy()
 
-        # Gộp archive + new solutions → sort → giữ top k
-        combined = np.vstack((archive, new_solutions))
-        combined_fit = np.concatenate((fitness, new_fitnesses))
-        sorted_idx = np.argsort(combined_fit)
-        archive = combined[sorted_idx[:archive_size]]
-        fitness = combined_fit[sorted_idx[:archive_size]]
-
         history.append(best_fitness)
+        new_solutions = np.array(new_solutions)
+        new_fitnesses = np.array(new_fitnesses)
 
-        # Cập nhật lại weights và p (vì archive đã thay đổi)
-        ranks = np.arange(1, archive_size + 1)
-        w = (1 / (q * archive_size * np.sqrt(2 * np.pi))) * np.exp(- (ranks - 1)**2 / (2 * q**2 * archive_size**2))
-        p = w / w.sum()
+        # Update archive: keep top `pop_size` from old + new
+        candidates = np.vstack((archive, new_solutions))
+        cand_fits = np.hstack((archive_fits, new_fitnesses))
+        order = np.argsort(cand_fits)[::-1]
+        archive = candidates[order[:pop_size]]
+        archive_fits = cand_fits[order[:pop_size]]
 
     return best_solution, best_fitness, history
