@@ -62,10 +62,12 @@ def plot_rastrigin_robustness():
                 box_colors.append(colors[algo])
 
         # Create box plot
-        bp = ax.boxplot(plot_data, tick_labels=labels, patch_artist=True,
+        bp = ax.boxplot(plot_data, patch_artist=True,
                         showmeans=True, meanline=True,
                         medianprops=dict(color='red', linewidth=2),
                         meanprops=dict(color='blue', linewidth=2, linestyle='--'))
+        # Set tick labels (compatible with older matplotlib versions)
+        ax.set_xticklabels(labels)
 
         # Color the boxes
         for patch, color in zip(bp['boxes'], box_colors):
@@ -124,18 +126,23 @@ def plot_knapsack_robustness():
 
     # Extract problem sizes
     n_items_list = [20, 50]
-    algorithms = ['ACO', 'GA', 'A*']
+    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC', 'ACO', 'A*']
 
     # Color scheme
     colors = {
-        'ACO': '#1f77b4',
-        'GA': '#ff7f0e',
-        'A*': '#2ca02c'
+        'PSO': '#1f77b4',
+        'ABC': '#ff7f0e',
+        'FA': '#2ca02c',
+        'CS': '#d62728',
+        'GA': '#9467bd',
+        'HC': '#8c564b',
+        'ACO': '#e377c2',
+        'A*': '#7f7f7f'
     }
 
     # Create box plots for each problem size
     for n in n_items_list:
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=(14, 7))
 
         # Prepare data for box plot
         plot_data = []
@@ -150,10 +157,12 @@ def plot_knapsack_robustness():
                 box_colors.append(colors[algo])
 
         # Create box plot
-        bp = ax.boxplot(plot_data, tick_labels=labels, patch_artist=True,
+        bp = ax.boxplot(plot_data, patch_artist=True,
                         showmeans=True, meanline=True,
                         medianprops=dict(color='red', linewidth=2),
                         meanprops=dict(color='blue', linewidth=2, linestyle='--'))
+        # Set tick labels (compatible with older matplotlib versions)
+        ax.set_xticklabels(labels)
 
         # Color the boxes
         for patch, color in zip(bp['boxes'], box_colors):
