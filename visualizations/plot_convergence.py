@@ -101,13 +101,18 @@ def plot_knapsack_convergence():
 
     # Extract problem sizes
     n_items_list = [20, 50]
-    algorithms = ['ACO', 'GA', 'A*']
+    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC', 'ACO', 'A*']
 
     # Color scheme
     colors = {
-        'ACO': '#1f77b4',
-        'GA': '#ff7f0e',
-        'A*': '#2ca02c'
+        'PSO': '#1f77b4',
+        'ABC': '#ff7f0e',
+        'FA': '#2ca02c',
+        'CS': '#d62728',
+        'GA': '#9467bd',
+        'HC': '#8c564b',
+        'ACO': '#e377c2',
+        'A*': '#7f7f7f'
     }
 
     # Create plots for each problem size

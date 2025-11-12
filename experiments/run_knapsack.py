@@ -14,8 +14,8 @@ from algorithms import aco, ga, a_star, pso, abc, fa, cs, hc
 # --- Định nghĩa thông số chung ---
 N_RUNS = 20  # Số lần chạy để lấy trung bình
 N_ITEMS_LIST = [20, 50]  # Thử nghiệm với số lượng items khác nhau
-POP_SIZE = 50
-MAX_ITER = 1000
+POP_SIZE = 50 # Số lượng cá thể trong quần thể
+MAX_ITER = 1000 # Số lần lặp tối đa
 
 # Tham số riêng
 ALGO_PARAMS = {
@@ -30,12 +30,12 @@ ALGO_PARAMS = {
 
 ALGOS = {
     'PSO': pso.pso_discrete,
-    'ABC': abc.abc_algorithm_discrete,
-    'FA': fa.firefly_algorithm_discrete,
+    'ABC': abc.abc_discrete,
+    'FA': fa.firefly_discrete,
     'CS': cs.cuckoo_search_discrete,
-    'GA': ga.genetic_algorithm_discrete,
+    'GA': ga.genetic_discrete,
     'HC': hc.hill_climbing_discrete,
-    'ACO': aco.aco,
+    'ACO': aco.aco_discrete,
     'A*': a_star.a_star_search
 }
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-def abc_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwargs):
+def abc_continuous(obj_func, bounds, n_dim, pop_size, max_iter, limit=10, **kwargs):
     """
     Artificial Bee Colony (ABC) algorithm for continuous optimization.
     
@@ -141,7 +141,7 @@ def abc_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, limit=
     return best_solution, best_fitness, history
 
 
-def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwargs):
+def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwargs):
     """
     Artificial Bee Colony (ABC) algorithm for discrete optimization.
     

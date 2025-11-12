@@ -14,8 +14,8 @@ from problems.rastrigin import rastrigin
 # --- Định nghĩa thông số chung ---
 N_RUNS = 20  # Số lần chạy để lấy trung bình
 DIMENSIONS = [10, 30]  # Thử nghiệm độ co giãn (Scalability)
-POP_SIZE = 50
-MAX_ITER = 1000
+POP_SIZE = 50 # Số lượng cá thể trong quần thể
+MAX_ITER = 1000 # Số lần lặp tối đa
 
 # Tham số riêng
 ALGO_PARAMS = {
@@ -29,10 +29,10 @@ ALGO_PARAMS = {
 
 ALGOS = {
     'PSO': pso.pso_continuous,
-    'ABC': abc.abc_algorithm_continuous,
-    'FA': fa.firefly_algorithm_continuous,
+    'ABC': abc.abc_continuous,
+    'FA': fa.firefly_continuous,
     'CS': cs.cuckoo_search_continuous,
-    'GA': ga.genetic_algorithm_continuous,
+    'GA': ga.genetic_continuous,
     'HC': hc.hill_climbing_continuous
 }
 

@@ -42,7 +42,8 @@ algorithm/
 
 ## 📊 Thuật toán được triển khai
 
-### Thuật toán cho Continuous Optimization (Rastrigin)
+### Thuật toán đa mục đích (Continuous & Discrete)
+6 thuật toán sau có thể giải **CẢ HAI** bài toán Rastrigin (continuous) và Knapsack (discrete):
 1. **PSO** - Particle Swarm Optimization
 2. **ABC** - Artificial Bee Colony
 3. **FA** - Firefly Algorithm
@@ -50,10 +51,17 @@ algorithm/
 5. **GA** - Genetic Algorithm
 6. **HC** - Hill Climbing
 
-### Thuật toán cho Discrete Optimization (Knapsack)
+**Lưu ý**: Mỗi thuật toán có 2 phiên bản:
+- Phiên bản `_continuous`: Sử dụng cho bài toán Rastrigin (tối ưu hóa liên tục)
+- Phiên bản `_discrete`: Sử dụng cho bài toán Knapsack (tối ưu hóa rời rạc)
+  - PSO, ABC, FA, CS: Sử dụng phương pháp sigmoid để chuyển đổi lời giải liên tục thành nhị phân
+  - GA: Sử dụng crossover/mutation phù hợp với từng loại bài toán
+  - HC: Sử dụng chiến lược tìm kiếm hàng xóm phù hợp với từng loại bài toán
+
+### Thuật toán chuyên biệt cho Discrete Optimization (Knapsack)
+2 thuật toán sau chỉ được triển khai cho bài toán Knapsack:
 1. **ACO** - Ant Colony Optimization
-2. **GA** - Genetic Algorithm (discrete version)
-3. **A*** - A* Search
+2. **A*** - A* Search
 
 ## 🔧 Yêu cầu
 
@@ -103,12 +111,14 @@ python visualizations/plot_rastrigin_3d.py
 ## 📈 Thí nghiệm được thực hiện
 
 ### Rastrigin Function
+- **Algorithms tested**: 6 thuật toán (PSO, ABC, FA, CS, GA, HC)
 - **Dimensions**: 10, 30
 - **Number of runs**: 20 (cho mỗi thuật toán)
 - **Population size**: 50
 - **Max iterations**: 1000
 
 ### Knapsack Problem
+- **Algorithms tested**: 8 thuật toán (PSO, ABC, FA, CS, GA, HC, ACO, A*)
 - **Problem sizes**: 20 items, 50 items
 - **Number of runs**: 20 (cho mỗi thuật toán)
 - **Population size**: 50

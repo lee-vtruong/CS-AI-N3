@@ -132,7 +132,7 @@ def mutate_discrete(solution, mutation_rate):
 
 # --- Main GA Functions ---
 
-def genetic_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, 
+def genetic_continuous(obj_func, bounds, n_dim, pop_size, max_iter, 
                                  crossover_rate=0.8, mutation_rate=0.01, 
                                  **kwargs):
     """
@@ -220,7 +220,7 @@ def genetic_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter,
     return best_solution, best_fitness, history
 
 
-def genetic_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, 
+def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter, 
                                crossover_rate=0.8, mutation_rate=0.01, 
                                **kwargs):
     """
