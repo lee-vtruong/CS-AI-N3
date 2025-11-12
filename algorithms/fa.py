@@ -1,6 +1,6 @@
 import numpy as np
 
-def firefly_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
+def firefly_continuous(obj_func, bounds, n_dim, pop_size, max_iter, alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
     """
     Firefly Algorithm (FA) for continuous optimization.
     
@@ -84,7 +84,7 @@ def firefly_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter, al
     return best_solution, best_fitness, history
 
 
-def firefly_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
+def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, beta0=1.0, gamma=0.95, **kwargs):
     """
     Firefly Algorithm (FA) for discrete optimization.
     
