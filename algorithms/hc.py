@@ -91,8 +91,16 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
     history : list
         History of best fitness values
     """
-    # Initialize random binary solution
-    current_solution = np.random.randint(0, 2, n_dim)
+    # # Initialize zeros solution
+    # current_solution = np.zeros(n_dim)
+
+    # Initialize random binary solution until valid
+    while True:
+        current_solution = np.random.randint(0, 2, n_dim)
+        total_weight = np.dot(current_solution, context['weights'])
+        if total_weight <= context['capacity']:
+            break
+    
     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
     current_fitness = -obj_func(current_solution, context)
     
