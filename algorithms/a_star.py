@@ -2,7 +2,24 @@ import heapq
 import numpy as np
 
 class Node:
-    """A search node: level, g (value so far), weight, solution, h (heuristic), f = g + h."""
+    """
+    A search node for A* algorithm.
+    
+    Attributes:
+    -----------
+    level : int
+        Current level in search tree (item index)
+    g : float
+        Actual cost (cumulative value so far)
+    weight : float
+        Total weight used so far
+    solution : list
+        Current partial solution
+    h : float
+        Heuristic estimate of remaining value
+    f : float
+        Total estimate f = g + h
+    """
     def __init__(self, level, g, weight, solution):
         self.level = level
         self.g = g
@@ -12,13 +29,40 @@ class Node:
         self.f = 0.0
 
     def __lt__(self, other):
-        """Max-heap: return True if self.f > other.f (higher f = higher priority)."""
+        """
+        Compare nodes for max-heap ordering.
+        
+        Returns:
+        --------
+        bool
+            True if self.f > other.f (higher f has higher priority)
+        """
         # Max-heap (prioritize nodes with higher f value)
         return self.f > other.f
 
 
 def calculate_heuristic(node, weights, values, capacity, n_items):
-    """Calculate h(x): heuristic estimate of remaining value using fractional knapsack."""
+    """
+    Calculate h(x): heuristic estimate of remaining value using fractional knapsack.
+    
+    Parameters:
+    -----------
+    node : Node
+        Current search node
+    weights : array-like
+        Item weights (sorted by value/weight ratio)
+    values : array-like
+        Item values (sorted by value/weight ratio)
+    capacity : float
+        Knapsack capacity
+    n_items : int
+        Number of items to consider
+    
+    Returns:
+    --------
+    h : float
+        Heuristic value (upper bound on remaining achievable value)
+    """
     if node.weight >= capacity:
         return 0.0  # Cannot add anything more
 
@@ -41,7 +85,23 @@ def calculate_heuristic(node, weights, values, capacity, n_items):
 
 
 def a_star_search(context, heuristic_func=None):
-    """A* search for 0/1 Knapsack using fractional knapsack heuristic."""
+    """
+    A* search algorithm for 0/1 Knapsack optimization.
+    
+    Parameters:
+    -----------
+    context : dict
+        Problem context containing 'weights', 'values', 'capacity'
+    heuristic_func : function, optional
+        Heuristic function (not used, fractional knapsack heuristic is applied)
+    
+    Returns:
+    --------
+    solution : ndarray
+        Binary solution (0/1 vector)
+    best_value : float
+        Best fitness value found
+    """
     weights = context['weights']
     values = context['values']
     capacity = context['capacity']

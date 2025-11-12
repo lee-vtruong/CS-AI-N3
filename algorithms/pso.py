@@ -89,42 +89,33 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     """
     Binary Particle Swarm Optimization (BPSO) for discrete optimization.
     
-    Implements the original BPSO algorithm (Kennedy & Eberhart, 1997).
-    Particles move in continuous velocity space and transfer to binary space via sigmoid.
-    
-    Parameters
-    ----------
-    obj_func : callable
-        Objective function (maximize). Signature: obj_func(binary_solution, context)
+    Parameters:
+    -----------
+    obj_func : function
+        Objective function to maximize
     context : dict
         Problem context with 'weights', 'values', 'capacity', etc.
     n_dim : int
-        Number of dimensions (items for knapsack).
+        Number of dimensions (items)
     pop_size : int
-        Population size (number of particles).
+        Population size (number of particles)
     max_iter : int
-        Maximum number of iterations.
-    w : float, default=0.8
-        Inertia weight for velocity update.
-    c1 : float, default=2.0
-        Cognitive coefficient (personal best attraction).
-    c2 : float, default=2.0
-        Social coefficient (global best attraction).
+        Maximum number of iterations
+    w : float
+        Inertia weight
+    c1 : float
+        Cognitive coefficient
+    c2 : float
+        Social coefficient
     
-    Returns
-    -------
-    best_solution : np.ndarray
-        Best binary solution found (0/1 vector).
+    Returns:
+    --------
+    best_solution : ndarray
+        Best binary solution found (0/1 vector)
     best_fitness : float
-        Fitness value of best solution (maximization, not negated).
+        Best fitness value
     history : list
-        Best fitness at each iteration.
-    
-    References
-    ----------
-    Kennedy, J., & Eberhart, R. C. (1997).
-    A new optimizer using particle swarm theory.
-    Proceedings of the sixth international symposium on micro machine and human science.
+        History of best fitness values
     """
     # Initialize velocity space (continuous, unbounded)
     velocities = np.zeros((pop_size, n_dim))
