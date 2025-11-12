@@ -1,11 +1,12 @@
 import numpy as np
+import math
 
 def levy_flight(n_dim, beta=1.5):
     """
     Generate step using Levy flight distribution.
     """
-    sigma = (np.math.gamma(1 + beta) * np.sin(np.pi * beta / 2) / 
-             (np.math.gamma((1 + beta) / 2) * beta * 2**((beta - 1) / 2)))**(1 / beta)
+    sigma = (math.gamma(1 + beta) * np.sin(np.pi * beta / 2) / 
+             (math.gamma((1 + beta) / 2) * beta * 2**((beta - 1) / 2)))**(1 / beta)
     
     u = np.random.randn(n_dim) * sigma
     v = np.random.randn(n_dim)
@@ -145,10 +146,16 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
     # Initialize nests (solutions)
     nests = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
     
-    # Evaluate fitness with binarization
+    # Evaluate fitness with binarization (numerically stable sigmoid)
     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+    def stable_sigmoid_binarize(x):
+        # Clip x to prevent overflow in exp
+        x_clipped = np.clip(x, -500, 500)
+        probs = 1 / (1 + np.exp(-x_clipped))
+        return (probs > 0.5).astype(int)
+    
     fitness = np.array([
-        -obj_func((1 / (1 + np.exp(-nest)) > 0.5).astype(int), context) 
+        -obj_func(stable_sigmoid_binarize(nest), context) 
         for nest in nests
     ])
     
@@ -168,8 +175,11 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
             step_size = 0.01 * levy_flight(n_dim, beta)
             new_nest = nests[i] + step_size * (nests[i] - best_solution)
             
-            # Apply sigmoid to convert continuous to binary
-            probabilities = 1 / (1 + np.exp(-new_nest))
+            # Apply sigmoid to convert continuous to binary (numerically stable)
+            # Clip x to prevent overflow in exp
+            x = new_nest
+            x_clipped = np.clip(x, -500, 500)
+            probabilities = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (probabilities > 0.5).astype(int)
             # Negate fitness for maximization (Knapsack is maximization, but we minimize)
             new_fitness = -obj_func(binary_solution, context)
@@ -197,8 +207,11 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
         for idx in worst_indices:
             # Generate new random solution
             nests[idx] = min_b + (max_b - min_b) * np.random.rand(n_dim)
-            # Evaluate with binarization
-            probabilities = 1 / (1 + np.exp(-nests[idx]))
+            # Evaluate with binarization (numerically stable sigmoid)
+            # Clip x to prevent overflow in exp
+            x = nests[idx]
+            x_clipped = np.clip(x, -500, 500)
+            probabilities = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (probabilities > 0.5).astype(int)
             # Negate fitness for maximization (Knapsack is maximization, but we minimize)
             fitness[idx] = -obj_func(binary_solution, context)
@@ -211,8 +224,11 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
         # Record history
         history.append(best_fitness)
     
-    # Return binary solution
-    probabilities = 1 / (1 + np.exp(-best_solution))
+    # Return binary solution (numerically stable sigmoid)
+    # Clip x to prevent overflow in exp
+    x = best_solution
+    x_clipped = np.clip(x, -500, 500)
+    probabilities = 1 / (1 + np.exp(-x_clipped))
     best_solution = (probabilities > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -best_fitness

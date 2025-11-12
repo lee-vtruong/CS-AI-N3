@@ -129,10 +129,16 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     # Initialize personal best positions and fitness
     # Keep positions as continuous for velocity updates, but evaluate fitness on binary for discrete
     personal_best_positions = particles.copy()
-    # Evaluate initial fitness with binarization
+    # Evaluate initial fitness with binarization (numerically stable sigmoid)
     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+    def stable_sigmoid_binarize(x):
+        # Clip x to prevent overflow in exp
+        x_clipped = np.clip(x, -500, 500)
+        probs = 1 / (1 + np.exp(-x_clipped))
+        return (probs > 0.5).astype(int)
+    
     personal_best_fitness = np.array([
-        -obj_func((1 / (1 + np.exp(-p)) > 0.5).astype(int), context) 
+        -obj_func(stable_sigmoid_binarize(p), context) 
         for p in particles
     ])
     
@@ -156,8 +162,11 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
             # Update position
             particles[i] = particles[i] + velocities[i]
             
-            # Apply sigmoid to convert continuous to binary
-            probabilities = 1 / (1 + np.exp(-particles[i]))
+            # Apply sigmoid to convert continuous to binary (numerically stable)
+            # Clip x to prevent overflow in exp
+            x = particles[i]
+            x_clipped = np.clip(x, -500, 500)
+            probabilities = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (probabilities > 0.5).astype(int)
             # Negate fitness for maximization (Knapsack is maximization, but we minimize)
             fitness = -obj_func(binary_solution, context)
@@ -176,8 +185,11 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
         # Record history
         history.append(global_best_fitness)
     
-    # Return binary solution
-    probabilities = 1 / (1 + np.exp(-global_best_position))
+    # Return binary solution (numerically stable sigmoid)
+    # Clip x to prevent overflow in exp
+    x = global_best_position
+    x_clipped = np.clip(x, -500, 500)
+    probabilities = 1 / (1 + np.exp(-x_clipped))
     best_solution = (probabilities > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -global_best_fitness

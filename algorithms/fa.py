@@ -123,10 +123,16 @@ def firefly_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, alp
     # Initialize firefly positions
     fireflies = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
     
-    # Evaluate fitness (light intensity) with binarization
+    # Evaluate fitness (light intensity) with binarization (numerically stable sigmoid)
     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+    def stable_sigmoid_binarize(x):
+        # Clip x to prevent overflow in exp
+        x_clipped = np.clip(x, -500, 500)
+        probs = 1 / (1 + np.exp(-x_clipped))
+        return (probs > 0.5).astype(int)
+    
     fitness = np.array([
-        -obj_func((1 / (1 + np.exp(-f)) > 0.5).astype(int), context) 
+        -obj_func(stable_sigmoid_binarize(f), context) 
         for f in fireflies
     ])
     
@@ -158,8 +164,11 @@ def firefly_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, alp
                     fireflies[i] = fireflies[i] + beta * (fireflies[j] - fireflies[i]) + \
                                    alpha_t * (np.random.rand(n_dim) - 0.5)
                     
-                    # Apply sigmoid to convert continuous to binary
-                    probabilities = 1 / (1 + np.exp(-fireflies[i]))
+                    # Apply sigmoid to convert continuous to binary (numerically stable)
+                    # Clip x to prevent overflow in exp
+                    x = fireflies[i]
+                    x_clipped = np.clip(x, -500, 500)
+                    probabilities = 1 / (1 + np.exp(-x_clipped))
                     binary_solution = (probabilities > 0.5).astype(int)
                     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
                     fitness[i] = -obj_func(binary_solution, context)
@@ -172,8 +181,11 @@ def firefly_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, alp
         # Record history
         history.append(best_fitness)
     
-    # Return binary solution
-    probabilities = 1 / (1 + np.exp(-best_solution))
+    # Return binary solution (numerically stable sigmoid)
+    # Clip x to prevent overflow in exp
+    x = best_solution
+    x_clipped = np.clip(x, -500, 500)
+    probabilities = 1 / (1 + np.exp(-x_clipped))
     best_solution = (probabilities > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -best_fitness

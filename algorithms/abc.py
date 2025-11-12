@@ -175,10 +175,16 @@ def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=1
     
     # Initialize food sources (solutions)
     food_sources = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
-    # Evaluate initial fitness with binarization
+    # Evaluate initial fitness with binarization (numerically stable sigmoid)
     # Negate fitness for maximization (Knapsack is maximization, but we minimize)
+    def stable_sigmoid_binarize(x):
+        # Clip x to prevent overflow in exp
+        x_clipped = np.clip(x, -500, 500)
+        probs = 1 / (1 + np.exp(-x_clipped))
+        return (probs > 0.5).astype(int)
+    
     fitness = np.array([
-        -obj_func((1 / (1 + np.exp(-sol)) > 0.5).astype(int), context) 
+        -obj_func(stable_sigmoid_binarize(sol), context) 
         for sol in food_sources
     ])
     
@@ -208,9 +214,12 @@ def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=1
             new_solution = food_sources[i].copy()
             new_solution[j] = food_sources[i][j] + phi * (food_sources[i][j] - food_sources[k][j])
             
-            # Apply sigmoid to convert continuous to binary
-            probabilities = 1 / (1 + np.exp(-new_solution))
-            binary_solution = (probabilities > 0.5).astype(int)
+            # Apply sigmoid to convert continuous to binary (numerically stable)
+            # Clip x to prevent overflow in exp
+            x = new_solution
+            x_clipped = np.clip(x, -500, 500)
+            sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
+            binary_solution = (sigmoid_probs > 0.5).astype(int)
             # Negate fitness for maximization (Knapsack is maximization, but we minimize)
             new_fitness = -obj_func(binary_solution, context)
             
@@ -249,9 +258,12 @@ def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=1
             new_solution = food_sources[i].copy()
             new_solution[j] = food_sources[i][j] + phi * (food_sources[i][j] - food_sources[k][j])
             
-            # Apply sigmoid to convert continuous to binary
-            probabilities = 1 / (1 + np.exp(-new_solution))
-            binary_solution = (probabilities > 0.5).astype(int)
+            # Apply sigmoid to convert continuous to binary (numerically stable)
+            # Clip x to prevent overflow in exp
+            x = new_solution
+            x_clipped = np.clip(x, -500, 500)
+            sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
+            binary_solution = (sigmoid_probs > 0.5).astype(int)
             # Negate fitness for maximization (Knapsack is maximization, but we minimize)
             new_fitness = -obj_func(binary_solution, context)
             
@@ -274,9 +286,12 @@ def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=1
             if trial[i] > limit:
                 # Generate new random solution
                 food_sources[i] = min_b + (max_b - min_b) * np.random.rand(n_dim)
-                # Evaluate with binarization
-                probabilities = 1 / (1 + np.exp(-food_sources[i]))
-                binary_solution = (probabilities > 0.5).astype(int)
+                # Evaluate with binarization (numerically stable sigmoid)
+                # Clip x to prevent overflow in exp
+                x = food_sources[i]
+                x_clipped = np.clip(x, -500, 500)
+                sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
+                binary_solution = (sigmoid_probs > 0.5).astype(int)
                 # Negate fitness for maximization (Knapsack is maximization, but we minimize)
                 fitness[i] = -obj_func(binary_solution, context)
                 trial[i] = 0
@@ -289,9 +304,12 @@ def abc_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=1
         # Record history
         history.append(best_fitness)
     
-    # Return binary solution
-    probabilities = 1 / (1 + np.exp(-best_solution))
-    best_solution = (probabilities > 0.5).astype(int)
+    # Return binary solution (numerically stable sigmoid)
+    # Clip x to prevent overflow in exp
+    x = best_solution
+    x_clipped = np.clip(x, -500, 500)
+    sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
+    best_solution = (sigmoid_probs > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -best_fitness
     
