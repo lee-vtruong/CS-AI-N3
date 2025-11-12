@@ -196,8 +196,13 @@ def genetic_algorithm_continuous(obj_func, bounds, n_dim, pop_size, max_iter,
                 o1 = mutate_continuous(parents[i], mutation_rate, bounds)
                 offspring.append(o1)
         
-        # Evaluate offspring
         offspring = np.array(offspring[:pop_size])
+
+        # --- THAY ĐỔI: ELITISM (Giữ lại cá thể tốt nhất) ---
+        # Đảm bảo cá thể tốt nhất của thế hệ trước được truyền sang thế hệ sau
+        offspring[0] = best_solution.copy()
+        
+        # Evaluate offspring
         offspring_fitness = np.array([obj_func(ind) for ind in offspring])
         
         # Replacement (generational)
@@ -276,8 +281,13 @@ def genetic_algorithm_discrete(obj_func, context, n_dim, pop_size, max_iter,
                 o1 = mutate_discrete(parents[i], mutation_rate)
                 offspring.append(o1)
         
-        # Ensure integer type for binary solutions
         offspring = np.array(offspring[:pop_size], dtype=int)
+
+        # --- THAY ĐỔI: ELITISM (Giữ lại cá thể tốt nhất) ---
+        # Đảm bảo cá thể tốt nhất của thế hệ trước được truyền sang thế hệ sau
+        offspring[0] = best_solution.copy()
+        
+        # Evaluate offspring
         offspring_fitness = np.array([obj_func(ind, context) for ind in offspring])
         
         # Replacement (generational)

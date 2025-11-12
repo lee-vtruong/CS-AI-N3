@@ -175,6 +175,9 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
             step_size = 0.01 * levy_flight(n_dim, beta)
             new_nest = nests[i] + step_size * (nests[i] - best_solution)
             
+            # --- THAY ĐỔI: Thêm np.clip để đảm bảo tính nhất quán ---
+            new_nest = np.clip(new_nest, min_b, max_b)
+            
             # Apply sigmoid to convert continuous to binary (numerically stable)
             # Clip x to prevent overflow in exp
             x = new_nest
