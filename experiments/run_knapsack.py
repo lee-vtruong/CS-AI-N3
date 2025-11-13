@@ -9,13 +9,13 @@ import tracemalloc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from problems.knapsack import generate_knapsack_data, knapsack_fitness
-from algorithms import aco, ga, a_star, pso, abc, fa, cs, hc
+from algorithms import aco, ga, sa, pso, abc, fa, cs, hc
 
 # --- Định nghĩa thông số chung ---
-N_RUNS = 20  # Số lần chạy để lấy trung bình
+N_RUNS = 5  # Số lần chạy để lấy trung bình
 N_ITEMS_LIST = [20, 50]  # Thử nghiệm với số lượng items khác nhau
 POP_SIZE = 50 # Số lượng cá thể trong quần thể
-MAX_ITER = 1000 # Số lần lặp tối đa
+MAX_ITER = 100 # Số lần lặp tối đa
 
 # Tham số riêng
 ALGO_PARAMS = {
@@ -25,7 +25,8 @@ ALGO_PARAMS = {
     'cs': {'pa': 0.25, 'beta': 1.5},
     'ga': {'crossover_rate': 0.8, 'mutation_rate': 0.05},
     'hc': {'step_size': 0.1},
-    'aco': {'alpha': 1.0, 'beta': 2.0, 'rho': 0.5}
+    'aco': {'alpha': 1.0, 'beta': 2.0, 'rho': 0.5},
+    'sa': {'initial_temp': 100.0, 'cooling_rate': 0.95, 'min_temp': 0.01}
 }
 
 ALGOS = {
@@ -36,7 +37,7 @@ ALGOS = {
     'GA': ga.genetic_discrete,
     'HC': hc.hill_climbing_discrete,
     'ACO': aco.aco_discrete,
-    'A*': a_star.a_star_search
+    'SA': sa.simulated_annealing_discrete
 }
 
 # --- Script chạy thí nghiệm ---
@@ -81,16 +82,12 @@ for n_items in N_ITEMS_LIST:
             tracemalloc.start()
             start_time = time.time()
 
-            # A* is different - it's deterministic and doesn't have iterations
-            if algo_name == 'A*':
-                sol, fit = algo_func(context)
-                hist = [fit]  # A* doesn't have history, just final result
-            elif algo_name == 'ACO':
+            if algo_name == 'ACO':
                 # ACO doesn't need n_dim
                 sol, fit, hist = algo_func(knapsack_fitness, context, POP_SIZE, MAX_ITER,
                                            **ALGO_PARAMS[algo_name.lower()])
-            elif algo_name == 'HC':
-                # HC doesn't need pop_size parameter
+            elif algo_name == 'HC' or algo_name == 'SA':
+                # HC and SA don't need pop_size parameter
                 sol, fit, hist = algo_func(knapsack_fitness, context, n_items, MAX_ITER,
                                            **ALGO_PARAMS[algo_name.lower()])
             else:
@@ -132,22 +129,18 @@ for n_items in N_ITEMS_LIST:
             [algo_name, n_items, avg_fit, std_fit, min_fit, max_fit, avg_time, avg_peak_mem])
 
         # Lưu lịch sử hội tụ trung bình
-        if algo_name == 'A*':
-            # For A*, create a flat history
-            avg_convergence = [max_fit] * (MAX_ITER + 1)
-        else:
-            # Pad histories to same length if needed
-            max_len = max(len(h) for h in run_histories)
-            padded_histories = []
-            for h in run_histories:
-                if len(h) < max_len:
-                    # Pad with last value
-                    padded = list(h) + [h[-1]] * (max_len - len(h))
-                else:
-                    padded = h
-                padded_histories.append(padded)
+        # Pad histories to same length if needed
+        max_len = max(len(h) for h in run_histories)
+        padded_histories = []
+        for h in run_histories:
+            if len(h) < max_len:
+                # Pad with last value
+                padded = list(h) + [h[-1]] * (max_len - len(h))
+            else:
+                padded = h
+            padded_histories.append(padded)
 
-            avg_convergence = np.mean(np.array(padded_histories), axis=0)
+        avg_convergence = np.mean(np.array(padded_histories), axis=0)
 
         convergence_data[n_items][algo_name] = avg_convergence
 

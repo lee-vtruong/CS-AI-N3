@@ -12,10 +12,10 @@ from algorithms import pso, abc, fa, cs, ga, hc
 from problems.rastrigin import rastrigin
 
 # --- Định nghĩa thông số chung ---
-N_RUNS = 20  # Số lần chạy để lấy trung bình
+N_RUNS = 5  # Số lần chạy để lấy trung bình
 DIMENSIONS = [10, 30]  # Thử nghiệm độ co giãn (Scalability)
 POP_SIZE = 50 # Số lượng cá thể trong quần thể
-MAX_ITER = 1000 # Số lần lặp tối đa
+MAX_ITER = 100 # Số lần lặp tối đa
 
 # Tham số riêng
 ALGO_PARAMS = {
