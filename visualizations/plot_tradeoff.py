@@ -84,7 +84,7 @@ def plot_rastrigin_tradeoff():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/tradeoff')
         output_file = os.path.join(
             results_output_dir, f'tradeoff_rastrigin_D{D}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
@@ -169,7 +169,7 @@ def plot_knapsack_tradeoff():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/tradeoff')
         output_file = os.path.join(
             results_output_dir, f'tradeoff_knapsack_N{n}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')

@@ -67,7 +67,7 @@ def plot_rastrigin_3d_surface():
 
     # Save figure to results/ directory
     results_output_dir = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), 'results')
+        os.path.dirname(os.path.abspath(__file__))), 'results/rastrigin_3d')
     output_file = os.path.join(results_output_dir, 'rastrigin_3d_surface.png')
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
@@ -171,7 +171,7 @@ def plot_rastrigin_3d_surface_plot():
     
     # Save figure to results/ directory
     results_output_dir = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), 'results')
+        os.path.dirname(os.path.abspath(__file__))), 'results/rastrigin_3d')
     output_file = os.path.join(results_output_dir, 'rastrigin_3d_surface_plot.png')
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
@@ -216,7 +216,7 @@ def plot_rastrigin_cross_sections():
 
     # Save figure to results/ directory
     results_output_dir = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), 'results')
+        os.path.dirname(os.path.abspath(__file__))), 'results/rastrigin_3d')
     output_file = os.path.join(
         results_output_dir, 'rastrigin_cross_sections.png')
     plt.tight_layout()

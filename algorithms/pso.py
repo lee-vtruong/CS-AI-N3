@@ -193,5 +193,7 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     best_solution = (probabilities > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -global_best_fitness
+    # Convert history to maximization (all values should be positive)
+    history = [-h for h in history]
     
     return best_solution, best_fitness, history

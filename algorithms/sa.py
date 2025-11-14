@@ -197,6 +197,8 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
     
     # Return negated fitness (convert back to maximization)
     best_fitness = -best_fitness
+    # Convert history to maximization (all values should be positive)
+    history = [-h for h in history]
     
     return best_solution, best_fitness, history
 
