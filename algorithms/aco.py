@@ -84,11 +84,12 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
 
         history.append(best_fitness)
 
-        # Pheromone update: evaporation + elite deposit
+        # For minimization, deposit inversely proportional to fitness
         pheromone *= (1 - rho)
         for sol, fit in zip(solutions, fitnesses):
-            if fit > 0:
-                pheromone += sol * (Q * fit)
+            # Invert fitness: smaller fitness (better solutions) get more pheromone
+            pheromone += sol * (Q/fit)
+        
         
     return best_solution, best_fitness, history
 
