@@ -138,7 +138,7 @@ def plot_knapsack_complexity():
 
     # Extract problem sizes and algorithms
     n_items_list = [20, 50]
-    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC', 'ACO', 'A*']
+    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC', 'ACO', 'SA']
 
     # Color scheme
     colors = {
@@ -149,7 +149,7 @@ def plot_knapsack_complexity():
         'GA': '#9467bd',
         'HC': '#8c564b',
         'ACO': '#e377c2',
-        'A*': '#7f7f7f'
+        'SA': '#7f7f7f'
     }
 
     # Create plots for each problem size

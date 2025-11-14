@@ -5,7 +5,7 @@ Dự án triển khai và so sánh **8 thuật toán tối ưu hóa** trên **2 
 ## 📋 Mô tả dự án
 
 Dự án này là phần triển khai cho môn **Nhập môn AI**, bao gồm:
-- **8 thuật toán tìm kiếm/tối ưu hóa**: PSO, ABC, FA, CS, GA, HC, ACO, A*
+- **8 thuật toán tìm kiếm/tối ưu hóa**: PSO, ABC, FA, CS, GA, HC, ACO, SA
 - **2 bài toán benchmark**: 
   - Rastrigin Function (continuous optimization)
   - 0/1 Knapsack Problem (discrete optimization)
@@ -23,7 +23,7 @@ algorithm/
 │   ├── ga.py           # Genetic Algorithm
 │   ├── hc.py           # Hill Climbing
 │   ├── aco.py          # Ant Colony Optimization
-│   └── a_star.py       # A* Search
+│   └── sa.py           # Simulated Annealing
 ├── problems/            # Định nghĩa bài toán
 │   ├── rastrigin.py    # Rastrigin function
 │   └── knapsack.py     # Knapsack problem
@@ -61,7 +61,7 @@ algorithm/
 ### Thuật toán chuyên biệt cho Discrete Optimization (Knapsack)
 2 thuật toán sau chỉ được triển khai cho bài toán Knapsack:
 1. **ACO** - Ant Colony Optimization
-2. **A*** - A* Search
+2. **SA** - Simulated Annealing
 
 ## 🔧 Yêu cầu
 
@@ -118,7 +118,7 @@ python visualizations/plot_rastrigin_3d.py
 - **Max iterations**: 1000
 
 ### Knapsack Problem
-- **Algorithms tested**: 8 thuật toán (PSO, ABC, FA, CS, GA, HC, ACO, A*)
+- **Algorithms tested**: 8 thuật toán (PSO, ABC, FA, CS, GA, HC, ACO, SA)
 - **Problem sizes**: 20 items, 50 items
 - **Number of runs**: 20 (cho mỗi thuật toán)
 - **Population size**: 50
@@ -185,6 +185,7 @@ Dự án thực hiện các phân tích sau:
 - Yang & Deb (2009) - Cuckoo Search
 - Goldberg (1989) - Genetic Algorithms
 - Dorigo (1992) - Ant Colony Optimization
+- Kirkpatrick et al. (1983) - Simulated Annealing
 
 ### Bài toán
 - Rastrigin (1974) - Systems of Extremal Control
