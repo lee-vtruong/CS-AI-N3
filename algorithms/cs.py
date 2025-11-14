@@ -235,5 +235,7 @@ def cuckoo_search_discrete(obj_func, context, n_dim, pop_size, max_iter, pa=0.25
     best_solution = (probabilities > 0.5).astype(int)
     # Return negated fitness (convert back to maximization)
     best_fitness = -best_fitness
+    # Convert history to maximization (all values should be positive)
+    history = [-h for h in history]
     
     return best_solution, best_fitness, history

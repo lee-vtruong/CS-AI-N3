@@ -66,7 +66,7 @@ def plot_rastrigin_convergence():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/convergence')
         output_file = os.path.join(
             results_output_dir, f'convergence_rastrigin_D{D}.png')
         plt.tight_layout()
@@ -134,7 +134,7 @@ def plot_knapsack_convergence():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/convergence')
         output_file = os.path.join(
             results_output_dir, f'convergence_knapsack_N{n}.png')
         plt.tight_layout()

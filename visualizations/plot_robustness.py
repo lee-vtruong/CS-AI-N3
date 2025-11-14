@@ -92,7 +92,7 @@ def plot_rastrigin_robustness():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/robustness')
         output_file = os.path.join(
             results_output_dir, f'robustness_rastrigin_D{D}.png')
         plt.tight_layout()
@@ -186,7 +186,7 @@ def plot_knapsack_robustness():
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'results')
+            os.path.dirname(os.path.abspath(__file__))), 'results/robustness')
         output_file = os.path.join(
             results_output_dir, f'robustness_knapsack_N{n}.png')
         plt.tight_layout()
