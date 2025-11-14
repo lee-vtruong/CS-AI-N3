@@ -75,6 +75,110 @@ def plot_rastrigin_3d_surface():
     plt.close()
 
 
+def plot_rastrigin_3d_surface_plot():
+    """
+    Plot 3D surface plot of Rastrigin function with improved visualization.
+    """
+    print("Generating improved 3D surface plot for Rastrigin function...")
+    
+    try:
+        from mpl_toolkits.mplot3d import Axes3D
+    except ImportError:
+        print("Warning: Could not import 3D plotting capabilities. Skipping 3D surface plot.")
+        return
+    
+    # Create a finer grid for smoother surface
+    x = np.linspace(-5.12, 5.12, 250)  # Increased resolution
+    y = np.linspace(-5.12, 5.12, 250)
+    X, Y = np.meshgrid(x, y)
+    
+    # Calculate Z values (Rastrigin function)
+    Z = np.zeros_like(X)
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            Z[i, j] = rastrigin(np.array([X[i, j], Y[i, j]]))
+    
+    # Create 3D figure with better size
+    fig = plt.figure(figsize=(16, 12))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Plot surface with improved settings
+    surf = ax.plot_surface(X, Y, Z, 
+                          cmap='rainbow',  # Rainbow colormap like the reference
+                          alpha=0.95,      # Slightly transparent
+                          linewidth=0,     # No grid lines on surface
+                          antialiased=True,
+                          shade=True,
+                          edgecolor='none',
+                          rcount=200,      # Number of rows in surface grid
+                          ccount=200,      # Number of columns in surface grid
+                          vmin=0,          # Minimum value for colormap
+                          vmax=80)         # Maximum value for colormap
+    
+    # Add contour lines at the base
+    contours = ax.contour(X, Y, Z, 
+                         levels=15,
+                         cmap='rainbow',
+                         linewidths=1.5,
+                         alpha=0.7,
+                         offset=0)  # Draw at z=0
+    
+    # Add colorbar
+    cbar = fig.colorbar(surf, ax=ax, shrink=0.6, aspect=15, pad=0.1)
+    cbar.set_label('Objective Function Value', fontsize=12, labelpad=15)
+    
+    # Set labels with better formatting
+    ax.set_xlabel('X', fontsize=14, labelpad=15, fontweight='bold')
+    ax.set_ylabel('Y', fontsize=14, labelpad=15, fontweight='bold')
+    ax.set_zlabel('Objective Function Value', fontsize=12, labelpad=15)
+    
+    # Set title
+    ax.set_title('Rastrigin Function - 3D Surface Plot', 
+                fontsize=16, fontweight='bold', pad=25)
+    
+    # Mark global minimum with a larger red star
+    ax.scatter([0], [0], [rastrigin(np.array([0, 0]))], 
+              color='red', s=200, marker='*', 
+              edgecolors='darkred', linewidths=2,
+              label='Global Minimum (0, 0)', zorder=10)
+    
+    # Set viewing angle for better visualization (similar to reference)
+    ax.view_init(elev=25, azim=225)  # Adjusted angle
+    
+    # Set axis limits
+    ax.set_xlim([-5.12, 5.12])
+    ax.set_ylim([-5.12, 5.12])
+    ax.set_zlim([0, 90])  # Set a reasonable upper limit
+    
+    # Improve grid appearance
+    ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+    
+    # Set background color to white
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
+    
+    # Make pane edges more visible
+    ax.xaxis.pane.set_edgecolor('gray')
+    ax.yaxis.pane.set_edgecolor('gray')
+    ax.zaxis.pane.set_edgecolor('gray')
+    
+    # Adjust tick parameters
+    ax.tick_params(axis='both', which='major', labelsize=10)
+    
+    # Add legend
+    ax.legend(fontsize=11, loc='upper left')
+    
+    # Save figure to results/ directory
+    results_output_dir = os.path.join(os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))), 'results')
+    output_file = os.path.join(results_output_dir, 'rastrigin_3d_surface_plot.png')
+    plt.tight_layout()
+    plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"✓ Saved: {output_file}")
+    plt.close()
+
+
 def plot_rastrigin_cross_sections():
     """
     Plot cross-sections of Rastrigin function to show its multimodal nature.
@@ -129,7 +233,10 @@ if __name__ == '__main__':
     print("\n[1] Creating heatmap and contour plots...")
     plot_rastrigin_3d_surface()
 
-    print("\n[2] Creating cross-section plots...")
+    print("\n[2] Creating 3D surface plot...")
+    plot_rastrigin_3d_surface_plot()
+
+    print("\n[3] Creating cross-section plots...")
     plot_rastrigin_cross_sections()
 
     print("\n" + "=" * 60)

@@ -12,10 +12,10 @@ from problems.knapsack import generate_knapsack_data, knapsack_fitness
 from algorithms import aco, ga, sa, pso, abc, fa, cs, hc
 
 # --- Định nghĩa thông số chung ---
-N_RUNS = 5  # Số lần chạy để lấy trung bình
+N_RUNS = 10  # Số lần chạy để lấy trung bình
 N_ITEMS_LIST = [20, 50]  # Thử nghiệm với số lượng items khác nhau
 POP_SIZE = 50 # Số lượng cá thể trong quần thể
-MAX_ITER = 100 # Số lần lặp tối đa
+MAX_ITER = 50 # Số lần lặp tối đa
 
 # Tham số riêng
 ALGO_PARAMS = {
