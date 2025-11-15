@@ -30,14 +30,25 @@ algorithm/
 ├── experiments/         # Experiment scripts
 │   ├── run_rastrigin.py
 │   └── run_knapsack.py
-├── visualizations/      # Plotting scripts (Python files only)
+├── visualizations/      # Plotting scripts
 │   ├── plot_convergence.py
 │   ├── plot_robustness.py
-│   └── plot_rastrigin_3d.py
-├── results/            # Experiment results (CSV & PNG files)
-│   ├── *.csv          # Raw and summary data
-│   └── *.png          # Visualization plots
-└── README.md
+│   ├── plot_rastrigin_3d.py
+│   ├── plot_complexity.py
+│   ├── plot_tradeoff.py
+│   └── plot_single_algo_convergence.py
+├── results/            # Experiment results
+│   ├── *.csv          # Summary and raw data files
+│   ├── convergence/    # Convergence curve plots
+│   ├── robustness/    # Robustness (box plot) visualizations
+│   ├── rastrigin_3d/  # 3D surface and contour plots for Rastrigin
+│   ├── complexity/    # Complexity analysis plots
+│   ├── tradeoff/      # Time-quality tradeoff plots
+│   └── single_algo_convergence/  # Individual algorithm convergence plots
+├── notebooks/          # Jupyter notebooks (if any)
+├── README.md
+├── FITNESS_EXPLANATION.md
+└── TODO.md
 ```
 
 ## 📊 Implemented Algorithms
@@ -100,6 +111,15 @@ python visualizations/plot_robustness.py
 
 # Plot heatmap & contour of Rastrigin function
 python visualizations/plot_rastrigin_3d.py
+
+# Plot complexity analysis
+python visualizations/plot_complexity.py
+
+# Plot time-quality tradeoff
+python visualizations/plot_tradeoff.py
+
+# Plot individual algorithm convergence
+python visualizations/plot_single_algo_convergence.py
 ```
 
 ### Step 3: View Results
@@ -128,25 +148,27 @@ python visualizations/plot_rastrigin_3d.py
 
 ### In the `results/` directory:
 
-**CSV Files:**
+**CSV Files (Root directory):**
 - `rastrigin_summary.csv` - Summary statistics (mean, std, time)
 - `rastrigin_convergence.csv` - Convergence data by iteration
-- `rastrigin_raw_fitness.csv` - Raw data from 20 runs
+- `rastrigin_raw_fitness.csv` - Raw data from multiple runs
 - `knapsack_summary.csv` - Summary statistics
 - `knapsack_convergence.csv` - Convergence data
 - `knapsack_raw_fitness.csv` - Raw data
 
-**PNG Files (Visualizations):**
-- `convergence_rastrigin_D10.png` - Convergence for D=10
-- `convergence_rastrigin_D30.png` - Convergence for D=30
-- `convergence_knapsack_N20.png` - Convergence for N=20
-- `convergence_knapsack_N50.png` - Convergence for N=50
-- `robustness_rastrigin_D10.png` - Box plot for D=10
-- `robustness_rastrigin_D30.png` - Box plot for D=30
-- `robustness_knapsack_N20.png` - Box plot for N=20
-- `robustness_knapsack_N50.png` - Box plot for N=50
-- `rastrigin_3d_surface.png` - Heatmap and contour plot
-- `rastrigin_cross_sections.png` - Cross-section plots
+**Subdirectories (PNG Visualizations):**
+
+- **`convergence/`** - Convergence curve plots showing algorithm performance over iterations for different problem sizes and dimensions
+
+- **`robustness/`** - Box plot visualizations demonstrating algorithm stability and variance across multiple runs
+
+- **`rastrigin_3d/`** - 3D surface plots, heatmaps, and contour plots visualizing the Rastrigin function landscape
+
+- **`complexity/`** - Complexity analysis plots comparing algorithm performance with respect to problem size
+
+- **`tradeoff/`** - Time-quality tradeoff plots showing the relationship between computation time and solution quality
+
+- **`single_algo_convergence/`** - Individual algorithm convergence plots for detailed per-algorithm analysis
 
 ## 🎯 Rastrigin Function
 
