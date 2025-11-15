@@ -1,0 +1,16 @@
+# Python Requirements for Search Algorithms Project
+# Python 3.7+ is required
+
+# Core dependencies for algorithms and computations
+numpy>=1.19.0
+
+# Visualization library
+matplotlib>=3.3.0
+
+# Jupyter Notebook support (for running notebooks)
+jupyter>=1.0.0
+ipython>=7.0.0
+
+# Optional: For better notebook experience
+notebook>=6.0.0
+
