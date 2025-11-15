@@ -11,13 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from problems.knapsack import generate_knapsack_data, knapsack_fitness
 from algorithms import aco, ga, sa, pso, abc, fa, cs, hc
 
-# --- Định nghĩa thông số chung ---
-N_RUNS = 10  # Số lần chạy để lấy trung bình
-N_ITEMS_LIST = [20, 50]  # Thử nghiệm với số lượng items khác nhau
-POP_SIZE = 50 # Số lượng cá thể trong quần thể
-MAX_ITER = 50 # Số lần lặp tối đa
+# --- Common parameters ---
+N_RUNS = 10  # Number of runs for averaging
+N_ITEMS_LIST = [20, 50]  # Test with different number of items
+POP_SIZE = 50 # Population size
+MAX_ITER = 50 # Maximum number of iterations
 
-# Tham số riêng
+# Algorithm-specific parameters
 ALGO_PARAMS = {
     'pso': {'w': 0.8, 'c1': 2.0, 'c2': 2.0},
     'abc': {'limit': 10},
@@ -40,10 +40,10 @@ ALGOS = {
     'SA': sa.simulated_annealing_discrete
 }
 
-# --- Script chạy thí nghiệm ---
-results_summary = []  # Để lưu kết quả tổng hợp
-convergence_data = {}  # Để lưu lịch sử hội tụ
-raw_fitness_data = {}  # Để lưu dữ liệu thô cho box plot
+# --- Experiment script ---
+results_summary = []  # Store summary results
+convergence_data = {}  # Store convergence history
+raw_fitness_data = {}  # Store raw data for box plots
 
 print("=" * 60)
 print("KNAPSACK PROBLEM OPTIMIZATION EXPERIMENTS")
@@ -110,7 +110,7 @@ for n_items in N_ITEMS_LIST:
                 print(
                     f"  Run {r+1}/{N_RUNS} completed. Best fitness: {fit:.2f}")
 
-        # Tính toán thống kê
+        # Calculate statistics
         avg_fit = np.mean(run_fitnesses)
         std_fit = np.std(run_fitnesses)
         min_fit = np.min(run_fitnesses)
@@ -128,7 +128,7 @@ for n_items in N_ITEMS_LIST:
         results_summary.append(
             [algo_name, n_items, avg_fit, std_fit, min_fit, max_fit, avg_time, avg_peak_mem])
 
-        # Lưu lịch sử hội tụ trung bình
+        # Store average convergence history
         # Pad histories to same length if needed
         max_len = max(len(h) for h in run_histories)
         padded_histories = []
@@ -147,7 +147,7 @@ for n_items in N_ITEMS_LIST:
         # Save raw fitness data for box plots
         raw_fitness_data[n_items][algo_name] = run_fitnesses
 
-# --- Lưu kết quả ra file CSV ---
+# --- Save results to CSV files ---
 results_dir = os.path.join(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))), 'results')
 os.makedirs(results_dir, exist_ok=True)
@@ -169,11 +169,11 @@ print(f"✓ Summary saved to: {summary_file}")
 convergence_file = os.path.join(results_dir, 'knapsack_convergence.csv')
 with open(convergence_file, 'w', newline='') as f:
     writer = csv.writer(f)
-    # Viết header
+    # Write header
     header = ['Iteration'] + \
         [f"{algo}_N{n}" for n in N_ITEMS_LIST for algo in ALGOS.keys()]
     writer.writerow(header)
-    # Viết data
+    # Write data
     max_iters = max(len(convergence_data[n][algo])
                     for n in N_ITEMS_LIST for algo in ALGOS.keys())
     for i in range(max_iters):

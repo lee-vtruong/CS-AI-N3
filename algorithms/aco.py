@@ -9,7 +9,7 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
     Parameters:
     -----------
     obj_func : function
-        Fitness function (takes solution and context)
+        Objective function to minimize (takes solution and context)
     context : dict
         Problem context with 'weights', 'values', 'capacity', etc.
     pop_size : int
@@ -28,7 +28,7 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -43,7 +43,7 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
     eta = values / (weights + 1e-8)  # value/weight ratio
 
     history = []
-    best_fitness = -np.inf
+    best_fitness = np.inf
     best_solution = None
 
     for _ in range(max_iter):
@@ -56,10 +56,10 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
             current_weight = 0.0
             # Construct solution
             while np.any(available_items):
-                # Tìm items CÓ THỂ thêm vào (không vượt capacity)
+                # Find items that can be added (without exceeding capacity)
                 feasible_items = np.where((available_items) & (current_weight + weights <= capacity))[0]
                 
-                # Nếu không còn item nào thêm được → dừng
+                # If no items can be added, stop
                 if  len(feasible_items) == 0:
                     break
 
@@ -78,17 +78,20 @@ def aco_discrete(obj_func, context, pop_size, max_iter, alpha=1.0, beta=2.0, rho
             fitnesses.append(fit)
 
             # Update global best
-            if fit > best_fitness:
+            if fit < best_fitness:
                 best_fitness = fit
                 best_solution = sol.copy()
 
         history.append(best_fitness)
 
         # Pheromone update: evaporation + elite deposit
+        # For minimization, better solutions have less negative fitness (closer to 0)
+        # We use -fit to convert to positive reward (larger for better solutions)
         pheromone *= (1 - rho)
         for sol, fit in zip(solutions, fitnesses):
-            if fit > 0:
-                pheromone += sol * (Q * fit)
+            # Skip penalty cases (fit >= 0 indicates invalid solution)
+            if fit < 0:
+                pheromone += sol * (Q * (-fit))
         
     return best_solution, best_fitness, history
 
@@ -131,7 +134,7 @@ def aco_continuous(obj_func, bounds, n_dim, archive_size, pop_size, max_iter, q=
     bounds = np.array(bounds)
     lb, ub = bounds[:, 0], bounds[:, 1]
 
-    # Khởi tạo archive
+    # Initialize archive
     archive = np.random.uniform(lb, ub, size=(archive_size, n_dim))
     fitness = np.array([obj_func(sol) for sol in archive])
     sorted_idx = np.argsort(fitness)
@@ -142,24 +145,24 @@ def aco_continuous(obj_func, bounds, n_dim, archive_size, pop_size, max_iter, q=
     best_fitness = fitness[0]
     best_solution = archive[0].copy()
 
-    # Tính weights một lần (giống MATLAB)
+    # Calculate weights once (similar to MATLAB implementation)
     ranks = np.arange(1, archive_size + 1)
     w = (1 / (q * archive_size * np.sqrt(2 * np.pi))) * np.exp(- (ranks - 1)**2 / (2 * q**2 * archive_size**2))
-    p = w / w.sum()  # Xác suất chọn solution l
+    p = w / w.sum()  # Probability of selecting solution l
 
     for iter in range(max_iter):
         new_solutions = []
         new_fitnesses = []
 
         for _ in range(pop_size):
-            # Chọn một solution l từ archive theo p
+            # Select a solution l from archive according to p
             l = np.random.choice(archive_size, p=p)
 
             sol = np.zeros(n_dim)
             for i in range(n_dim):
                 mu = archive[l, i]
 
-                # Tính sigma_i^l = xi * avg |s_i^e - s_i^l| ∀ e ≠ l
+                # Calculate sigma_i^l = xi * avg |s_i^e - s_i^l| for all e ≠ l
                 if archive_size > 1:
                     distances = np.abs(archive[:, i] - mu)
                     sigma = xi * np.sum(distances) / (archive_size - 1)
@@ -177,7 +180,7 @@ def aco_continuous(obj_func, bounds, n_dim, archive_size, pop_size, max_iter, q=
                 best_fitness = fit
                 best_solution = sol.copy()
 
-        # Gộp archive + new solutions → sort → giữ top k
+        # Merge archive + new solutions → sort → keep top k
         combined = np.vstack((archive, new_solutions))
         combined_fit = np.concatenate((fitness, new_fitnesses))
         sorted_idx = np.argsort(combined_fit)
@@ -186,7 +189,7 @@ def aco_continuous(obj_func, bounds, n_dim, archive_size, pop_size, max_iter, q=
 
         history.append(best_fitness)
 
-        # Cập nhật lại weights và p (vì archive đã thay đổi)
+        # Update weights and p (because archive has changed)
         ranks = np.arange(1, archive_size + 1)
         w = (1 / (q * archive_size * np.sqrt(2 * np.pi))) * np.exp(- (ranks - 1)**2 / (2 * q**2 * archive_size**2))
         p = w / w.sum()

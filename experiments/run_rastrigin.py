@@ -11,13 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from algorithms import pso, abc, fa, cs, ga, hc
 from problems.rastrigin import rastrigin
 
-# --- Định nghĩa thông số chung ---
-N_RUNS = 10  # Số lần chạy để lấy trung bình
-DIMENSIONS = [10, 30]  # Thử nghiệm độ co giãn (Scalability)
-POP_SIZE = 50 # Số lượng cá thể trong quần thể
-MAX_ITER = 50 # Số lần lặp tối đa
+# --- Common parameters ---
+N_RUNS = 10  # Number of runs for averaging
+DIMENSIONS = [10, 30]  # Scalability test dimensions
+POP_SIZE = 50 # Population size
+MAX_ITER = 50 # Maximum number of iterations
 
-# Tham số riêng
+# Algorithm-specific parameters
 ALGO_PARAMS = {
     'pso': {'w': 0.8, 'c1': 2.0, 'c2': 2.0},
     'abc': {'limit': 10},
@@ -36,10 +36,10 @@ ALGOS = {
     'HC': hc.hill_climbing_continuous
 }
 
-# --- Script chạy thí nghiệm ---
-results_summary = []  # Để lưu kết quả tổng hợp
-convergence_data = {}  # Để lưu lịch sử hội tụ
-raw_fitness_data = {}  # Để lưu dữ liệu thô cho box plot
+# --- Experiment script ---
+results_summary = []  # Store summary results
+convergence_data = {}  # Store convergence history
+raw_fitness_data = {}  # Store raw data for box plots
 
 print("=" * 60)
 print("RASTRIGIN FUNCTION OPTIMIZATION EXPERIMENTS")
@@ -90,7 +90,7 @@ for D in DIMENSIONS:
             if (r + 1) % 5 == 0:
                 print(f"  Run {r+1}/{N_RUNS} completed. Best fitness: {fit:.4f}")
         
-        # Tính toán thống kê
+        # Calculate statistics
         avg_fit = np.mean(run_fitnesses)
         std_fit = np.std(run_fitnesses)
         min_fit = np.min(run_fitnesses)
@@ -107,7 +107,7 @@ for D in DIMENSIONS:
         
         results_summary.append([algo_name, D, avg_fit, std_fit, min_fit, max_fit, avg_time, avg_peak_mem])
         
-        # Lưu lịch sử hội tụ trung bình
+        # Store average convergence history
         # Pad histories to same length if needed
         max_len = max(len(h) for h in run_histories)
         padded_histories = []
@@ -125,7 +125,7 @@ for D in DIMENSIONS:
         # Save raw fitness data for box plots
         raw_fitness_data[D][algo_name] = run_fitnesses
 
-# --- Lưu kết quả ra file CSV ---
+# --- Save results to CSV files ---
 results_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'results')
 os.makedirs(results_dir, exist_ok=True)
 
@@ -146,10 +146,10 @@ print(f"✓ Summary saved to: {summary_file}")
 convergence_file = os.path.join(results_dir, 'rastrigin_convergence.csv')
 with open(convergence_file, 'w', newline='') as f:
     writer = csv.writer(f)
-    # Viết header
+    # Write header
     header = ['Iteration'] + [f"{algo}_D{D}" for D in DIMENSIONS for algo in ALGOS.keys()]
     writer.writerow(header)
-    # Viết data
+    # Write data
     max_iters = max(len(convergence_data[D][algo]) for D in DIMENSIONS for algo in ALGOS.keys())
     for i in range(max_iters):
         row = [i]

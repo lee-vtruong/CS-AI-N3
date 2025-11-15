@@ -103,7 +103,7 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -122,7 +122,7 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -133,8 +133,7 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
         if total_weight <= context['capacity']:
             break
     
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-    current_fitness = -obj_func(current_solution, context)
+    current_fitness = obj_func(current_solution, context)
     
     # Track best solution
     best_solution = current_solution.copy()
@@ -163,8 +162,7 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
             continue
         
         # Evaluate neighbor
-        # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-        neighbor_fitness = -obj_func(neighbor_solution, context)
+        neighbor_fitness = obj_func(neighbor_solution, context)
         
         # Calculate acceptance probability
         delta = neighbor_fitness - current_fitness
@@ -194,11 +192,6 @@ def simulated_annealing_discrete(obj_func, context, n_dim, max_iter,
         
         # Record history
         history.append(best_fitness)
-    
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -best_fitness
-    # Convert history to maximization (all values should be positive)
-    history = [-h for h in history]
     
     return best_solution, best_fitness, history
 

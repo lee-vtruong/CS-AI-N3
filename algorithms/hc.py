@@ -74,7 +74,7 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -87,7 +87,7 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -101,8 +101,7 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
         if total_weight <= context['capacity']:
             break
     
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-    current_fitness = -obj_func(current_solution, context)
+    current_fitness = obj_func(current_solution, context)
     
     # Track best solution
     best_solution = current_solution.copy()
@@ -119,8 +118,7 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
         neighbor_solution[bit_to_flip] = 1 - neighbor_solution[bit_to_flip]
         
         # Evaluate neighbor
-        # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-        neighbor_fitness = -obj_func(neighbor_solution, context)
+        neighbor_fitness = obj_func(neighbor_solution, context)
         
         # Accept if better (for minimization)
         if neighbor_fitness < current_fitness:
@@ -134,10 +132,5 @@ def hill_climbing_discrete(obj_func, context, n_dim, max_iter, **kwargs):
         
         # Record history
         history.append(best_fitness)
-    
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -best_fitness
-    # Convert history to maximization (all values should be positive)
-    history = [-h for h in history]
     
     return best_solution, best_fitness, history

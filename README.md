@@ -1,21 +1,21 @@
 # Project 01 - Search Algorithms
 
-Dự án triển khai và so sánh **8 thuật toán tối ưu hóa** trên **2 bài toán**: Rastrigin (liên tục) và Knapsack (rời rạc).
+A project implementing and comparing **8 optimization algorithms** on **2 problems**: Rastrigin (continuous) and Knapsack (discrete).
 
-## 📋 Mô tả dự án
+## 📋 Project Description
 
-Dự án này là phần triển khai cho môn **Nhập môn AI**, bao gồm:
-- **8 thuật toán tìm kiếm/tối ưu hóa**: PSO, ABC, FA, CS, GA, HC, ACO, SA
-- **2 bài toán benchmark**: 
+This project is an implementation for the **Introduction to AI** course, including:
+- **8 search/optimization algorithms**: PSO, ABC, FA, CS, GA, HC, ACO, SA
+- **2 benchmark problems**: 
   - Rastrigin Function (continuous optimization)
   - 0/1 Knapsack Problem (discrete optimization)
-- **Phân tích hiệu suất**: Convergence analysis, robustness testing, scalability evaluation
+- **Performance analysis**: Convergence analysis, robustness testing, scalability evaluation
 
-## 🗂️ Cấu trúc dự án
+## 🗂️ Project Structure
 
 ```
 algorithm/
-├── algorithms/          # Code nguồn của 8 thuật toán
+├── algorithms/          # Source code of 8 algorithms
 │   ├── pso.py          # Particle Swarm Optimization
 │   ├── abc.py          # Artificial Bee Colony
 │   ├── fa.py           # Firefly Algorithm
@@ -24,26 +24,26 @@ algorithm/
 │   ├── hc.py           # Hill Climbing
 │   ├── aco.py          # Ant Colony Optimization
 │   └── sa.py           # Simulated Annealing
-├── problems/            # Định nghĩa bài toán
+├── problems/            # Problem definitions
 │   ├── rastrigin.py    # Rastrigin function
 │   └── knapsack.py     # Knapsack problem
-├── experiments/         # Scripts chạy thí nghiệm
+├── experiments/         # Experiment scripts
 │   ├── run_rastrigin.py
 │   └── run_knapsack.py
-├── visualizations/      # Scripts vẽ biểu đồ (Python files only)
+├── visualizations/      # Plotting scripts (Python files only)
 │   ├── plot_convergence.py
 │   ├── plot_robustness.py
 │   └── plot_rastrigin_3d.py
-├── results/            # Kết quả thí nghiệm (CSV & PNG files)
-│   ├── *.csv          # Dữ liệu thô và tổng hợp
-│   └── *.png          # Biểu đồ visualizations
+├── results/            # Experiment results (CSV & PNG files)
+│   ├── *.csv          # Raw and summary data
+│   └── *.png          # Visualization plots
 └── README.md
 ```
 
-## 📊 Thuật toán được triển khai
+## 📊 Implemented Algorithms
 
-### Thuật toán đa mục đích (Continuous & Discrete)
-6 thuật toán sau có thể giải **CẢ HAI** bài toán Rastrigin (continuous) và Knapsack (discrete):
+### Multi-purpose Algorithms (Continuous & Discrete)
+The following 6 algorithms can solve **BOTH** Rastrigin (continuous) and Knapsack (discrete) problems:
 1. **PSO** - Particle Swarm Optimization
 2. **ABC** - Artificial Bee Colony
 3. **FA** - Firefly Algorithm
@@ -51,106 +51,106 @@ algorithm/
 5. **GA** - Genetic Algorithm
 6. **HC** - Hill Climbing
 
-**Lưu ý**: Mỗi thuật toán có 2 phiên bản:
-- Phiên bản `_continuous`: Sử dụng cho bài toán Rastrigin (tối ưu hóa liên tục)
-- Phiên bản `_discrete`: Sử dụng cho bài toán Knapsack (tối ưu hóa rời rạc)
-  - PSO, ABC, FA, CS: Sử dụng phương pháp sigmoid để chuyển đổi lời giải liên tục thành nhị phân
-  - GA: Sử dụng crossover/mutation phù hợp với từng loại bài toán
-  - HC: Sử dụng chiến lược tìm kiếm hàng xóm phù hợp với từng loại bài toán
+**Note**: Each algorithm has 2 versions:
+- `_continuous` version: Used for Rastrigin problem (continuous optimization)
+- `_discrete` version: Used for Knapsack problem (discrete optimization)
+  - PSO, ABC, FA, CS: Use sigmoid method to convert continuous solutions to binary
+  - GA: Use appropriate crossover/mutation for each problem type
+  - HC: Use appropriate neighbor search strategy for each problem type
 
-### Thuật toán chuyên biệt cho Discrete Optimization (Knapsack)
-2 thuật toán sau chỉ được triển khai cho bài toán Knapsack:
+### Specialized Algorithms for Discrete Optimization (Knapsack)
+The following 2 algorithms are only implemented for Knapsack problem:
 1. **ACO** - Ant Colony Optimization
 2. **SA** - Simulated Annealing
 
-## 🔧 Yêu cầu
+## 🔧 Requirements
 
 - **Python 3.7+**
-- **NumPy** (tính toán)
+- **NumPy** (computation)
 - **Matplotlib** (visualization)
 
-### Cài đặt thư viện
+### Library Installation
 
 ```bash
 pip install numpy matplotlib
 ```
 
-## 🚀 Cách chạy
+## 🚀 How to Run
 
-### Bước 1: Chạy thí nghiệm
+### Step 1: Run Experiments
 
-**Lưu ý**: Quá trình này sẽ mất vài phút (khoảng 5-15 phút tùy cấu hình máy).
+**Note**: This process will take a few minutes (approximately 5-15 minutes depending on machine configuration).
 
 ```bash
-# Chạy thí nghiệm cho Rastrigin Function
+# Run experiments for Rastrigin Function
 python experiments/run_rastrigin.py
 
-# Chạy thí nghiệm cho Knapsack Problem
+# Run experiments for Knapsack Problem
 python experiments/run_knapsack.py
 ```
 
-### Bước 2: Tạo các biểu đồ
+### Step 2: Generate Plots
 
 ```bash
-# Vẽ biểu đồ hội tụ (convergence curves)
+# Plot convergence curves
 python visualizations/plot_convergence.py
 
-# Vẽ biểu đồ độ ổn định (robustness - box plots)
+# Plot robustness (box plots)
 python visualizations/plot_robustness.py
 
-# Vẽ biểu đồ heatmap & contour của hàm Rastrigin
+# Plot heatmap & contour of Rastrigin function
 python visualizations/plot_rastrigin_3d.py
 ```
 
-### Bước 3: Xem kết quả
+### Step 3: View Results
 
-- **Tất cả kết quả**: Trong thư mục `results/`
-  - Dữ liệu CSV (raw data và summary)
-  - Biểu đồ PNG (visualizations)
+- **All results**: In the `results/` directory
+  - CSV data (raw data and summary)
+  - PNG plots (visualizations)
 
-## 📈 Thí nghiệm được thực hiện
+## 📈 Experiments Performed
 
 ### Rastrigin Function
-- **Algorithms tested**: 6 thuật toán (PSO, ABC, FA, CS, GA, HC)
+- **Algorithms tested**: 6 algorithms (PSO, ABC, FA, CS, GA, HC)
 - **Dimensions**: 10, 30
-- **Number of runs**: 20 (cho mỗi thuật toán)
+- **Number of runs**: 20 (for each algorithm)
 - **Population size**: 50
 - **Max iterations**: 1000
 
 ### Knapsack Problem
-- **Algorithms tested**: 8 thuật toán (PSO, ABC, FA, CS, GA, HC, ACO, SA)
+- **Algorithms tested**: 8 algorithms (PSO, ABC, FA, CS, GA, HC, ACO, SA)
 - **Problem sizes**: 20 items, 50 items
-- **Number of runs**: 20 (cho mỗi thuật toán)
+- **Number of runs**: 20 (for each algorithm)
 - **Population size**: 50
 - **Max iterations**: 1000
 
-## 📊 Kết quả đầu ra
+## 📊 Output Results
 
-### Trong thư mục `results/`:
+### In the `results/` directory:
 
 **CSV Files:**
-- `rastrigin_summary.csv` - Thống kê tổng hợp (mean, std, time)
-- `rastrigin_convergence.csv` - Dữ liệu hội tụ theo iteration
-- `rastrigin_raw_fitness.csv` - Dữ liệu thô từ 20 lần chạy
-- `knapsack_summary.csv` - Thống kê tổng hợp
-- `knapsack_convergence.csv` - Dữ liệu hội tụ
-- `knapsack_raw_fitness.csv` - Dữ liệu thô
+- `rastrigin_summary.csv` - Summary statistics (mean, std, time)
+- `rastrigin_convergence.csv` - Convergence data by iteration
+- `rastrigin_raw_fitness.csv` - Raw data from 20 runs
+- `knapsack_summary.csv` - Summary statistics
+- `knapsack_convergence.csv` - Convergence data
+- `knapsack_raw_fitness.csv` - Raw data
 
 **PNG Files (Visualizations):**
-- `convergence_rastrigin_D10.png` - Convergence cho D=10
-- `convergence_rastrigin_D30.png` - Convergence cho D=30
-- `convergence_knapsack_N20.png` - Convergence cho N=20
-- `convergence_knapsack_N50.png` - Convergence cho N=50
-- `robustness_rastrigin_D10.png` - Box plot cho D=10
-- `robustness_rastrigin_D30.png` - Box plot cho D=30
-- `robustness_knapsack_N20.png` - Box plot cho N=20
-- `robustness_knapsack_N50.png` - Box plot cho N=50
-- `rastrigin_3d_surface.png` - Heatmap và contour plot
+- `convergence_rastrigin_D10.png` - Convergence for D=10
+- `convergence_rastrigin_D30.png` - Convergence for D=30
+- `convergence_knapsack_N20.png` - Convergence for N=20
+- `convergence_knapsack_N50.png` - Convergence for N=50
+- `robustness_rastrigin_D10.png` - Box plot for D=10
+- `robustness_rastrigin_D30.png` - Box plot for D=30
+- `robustness_knapsack_N20.png` - Box plot for N=20
+- `robustness_knapsack_N50.png` - Box plot for N=50
+- `rastrigin_3d_surface.png` - Heatmap and contour plot
 - `rastrigin_cross_sections.png` - Cross-section plots
 
 ## 🎯 Rastrigin Function
 
-Hàm Rastrigin là một hàm benchmark phổ biến trong tối ưu hóa, có dạng:
+The Rastrigin function is a popular benchmark function in optimization, with the form:
 
 ```
 f(x) = 10n + Σ[x_i² - 10cos(2πx_i)]
@@ -158,27 +158,27 @@ f(x) = 10n + Σ[x_i² - 10cos(2πx_i)]
 
 - **Domain**: x_i ∈ [-5.12, 5.12]
 - **Global minimum**: f(0, 0, ..., 0) = 0
-- **Đặc điểm**: Highly multimodal (nhiều cực trị địa phương)
+- **Characteristics**: Highly multimodal (many local optima)
 
 ## 🎒 Knapsack Problem
 
-Bài toán cái túi 0/1:
-- **Input**: n items với weight và value
-- **Constraint**: Tổng weight ≤ capacity
-- **Objective**: Maximize tổng value
+The 0/1 Knapsack problem:
+- **Input**: n items with weight and value
+- **Constraint**: Total weight ≤ capacity
+- **Objective**: Maximize total value
 
-## 🔬 Phân tích
+## 🔬 Analysis
 
-Dự án thực hiện các phân tích sau:
+The project performs the following analyses:
 
-1. **Convergence Analysis**: Đánh giá tốc độ hội tụ của các thuật toán
-2. **Robustness Testing**: Kiểm tra độ ổn định qua 20 lần chạy
-3. **Scalability Evaluation**: So sánh hiệu suất với các problem size khác nhau
+1. **Convergence Analysis**: Evaluate convergence speed of algorithms
+2. **Robustness Testing**: Test stability across 20 runs
+3. **Scalability Evaluation**: Compare performance with different problem sizes
 4. **Statistical Comparison**: Mean, Standard Deviation, Min/Max fitness
 
-## 📚 Tài liệu tham khảo
+## 📚 References
 
-### Thuật toán
+### Algorithms
 - Kennedy & Eberhart (1995) - Particle Swarm Optimization
 - Karaboga (2005) - Artificial Bee Colony
 - Yang (2008) - Firefly Algorithm
@@ -187,37 +187,37 @@ Dự án thực hiện các phân tích sau:
 - Dorigo (1992) - Ant Colony Optimization
 - Kirkpatrick et al. (1983) - Simulated Annealing
 
-### Bài toán
+### Problems
 - Rastrigin (1974) - Systems of Extremal Control
 - Knapsack Problem - Classic NP-Complete problem
 
-## 👤 Tác giả
+## 👤 Author
 
-Dự án được phát triển cho môn **Nhập môn AI - HCMUS**
+Project developed for **Introduction to AI - HCMUS** course
 
-## 📝 Ghi chú
+## 📝 Notes
 
-- Tất cả code được viết từ đầu chỉ sử dụng **NumPy** (không dùng các thư viện tối ưu hóa có sẵn như scipy, scikit-learn, deap, etc.)
-- Mã nguồn tuân thủ chuẩn function signature đã định trong yêu cầu
-- Các tham số thuật toán đã được điều chỉnh để phù hợp với từng bài toán
+- All code is written from scratch using only **NumPy** (no optimization libraries like scipy, scikit-learn, deap, etc.)
+- Source code follows the function signature standards specified in requirements
+- Algorithm parameters have been adjusted to suit each problem
 
 ## 🐛 Troubleshooting
 
-**Nếu gặp lỗi import:**
+**If encountering import errors:**
 ```bash
-# Chạy từ thư mục project_01/
+# Run from project_01/ directory
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
-**Nếu matplotlib không hiển thị được:**
+**If matplotlib cannot display:**
 ```bash
-# Kiểm tra backend
+# Check backend
 python -c "import matplotlib; print(matplotlib.get_backend())"
 ```
 
-## 📧 Liên hệ
+## 📧 Contact
 
-Nếu có câu hỏi hoặc vấn đề, vui lòng mở issue hoặc liên hệ qua email.
+If you have questions or issues, please open an issue or contact via email.
 
 ---
 

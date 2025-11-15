@@ -91,7 +91,7 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -112,7 +112,7 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -124,7 +124,6 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
     fireflies = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
     
     # Evaluate fitness (light intensity) with binarization (numerically stable sigmoid)
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
     def stable_sigmoid_binarize(x):
         # Clip x to prevent overflow in exp
         x_clipped = np.clip(x, -500, 500)
@@ -132,7 +131,7 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
         return (probs > 0.5).astype(int)
     
     fitness = np.array([
-        -obj_func(stable_sigmoid_binarize(f), context) 
+        obj_func(stable_sigmoid_binarize(f), context) 
         for f in fireflies
     ])
     
@@ -170,8 +169,7 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
                     x_clipped = np.clip(x, -500, 500)
                     probabilities = 1 / (1 + np.exp(-x_clipped))
                     binary_solution = (probabilities > 0.5).astype(int)
-                    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-                    fitness[i] = -obj_func(binary_solution, context)
+                    fitness[i] = obj_func(binary_solution, context)
                     
                     # Update global best
                     if fitness[i] < best_fitness:
@@ -187,9 +185,5 @@ def firefly_discrete(obj_func, context, n_dim, pop_size, max_iter, alpha=0.5, be
     x_clipped = np.clip(x, -500, 500)
     probabilities = 1 / (1 + np.exp(-x_clipped))
     best_solution = (probabilities > 0.5).astype(int)
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -best_fitness
-    # Convert history to maximization (all values should be positive)
-    history = [-h for h in history]
     
     return best_solution, best_fitness, history

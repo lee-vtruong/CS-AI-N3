@@ -92,7 +92,7 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -113,7 +113,7 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -130,7 +130,6 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     # Keep positions as continuous for velocity updates, but evaluate fitness on binary for discrete
     personal_best_positions = particles.copy()
     # Evaluate initial fitness with binarization (numerically stable sigmoid)
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
     def stable_sigmoid_binarize(x):
         # Clip x to prevent overflow in exp
         x_clipped = np.clip(x, -500, 500)
@@ -138,7 +137,7 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
         return (probs > 0.5).astype(int)
     
     personal_best_fitness = np.array([
-        -obj_func(stable_sigmoid_binarize(p), context) 
+        obj_func(stable_sigmoid_binarize(p), context) 
         for p in particles
     ])
     
@@ -168,8 +167,7 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
             x_clipped = np.clip(x, -500, 500)
             probabilities = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (probabilities > 0.5).astype(int)
-            # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-            fitness = -obj_func(binary_solution, context)
+            fitness = obj_func(binary_solution, context)
             
             # Update personal best
             if fitness < personal_best_fitness[i]:
@@ -191,9 +189,6 @@ def pso_discrete(obj_func, context, n_dim, pop_size, max_iter, w=0.8, c1=2.0, c2
     x_clipped = np.clip(x, -500, 500)
     probabilities = 1 / (1 + np.exp(-x_clipped))
     best_solution = (probabilities > 0.5).astype(int)
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -global_best_fitness
-    # Convert history to maximization (all values should be positive)
-    history = [-h for h in history]
+    best_fitness = global_best_fitness
     
     return best_solution, best_fitness, history

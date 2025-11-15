@@ -198,8 +198,8 @@ def genetic_continuous(obj_func, bounds, n_dim, pop_size, max_iter,
         
         offspring = np.array(offspring[:pop_size])
 
-        # --- THAY ĐỔI: ELITISM (Giữ lại cá thể tốt nhất) ---
-        # Đảm bảo cá thể tốt nhất của thế hệ trước được truyền sang thế hệ sau
+        # --- ELITISM: Keep the best individual ---
+        # Ensure the best individual from previous generation is passed to next generation
         offspring[0] = best_solution.copy()
         
         # Evaluate offspring
@@ -229,7 +229,7 @@ def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter,
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -257,7 +257,7 @@ def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter,
     fitness = np.array([obj_func(ind, context) for ind in population])
     
     # Find best
-    best_idx = np.argmax(fitness)
+    best_idx = np.argmin(fitness)
     best_fitness = fitness[best_idx]
     best_solution = population[best_idx].copy()
     history = [best_fitness]
@@ -265,7 +265,7 @@ def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter,
     # Evolution loop
     for generation in range(max_iter):
         # Selection
-        parents = tournament_selection(population, fitness, k=3, maximize=True)
+        parents = tournament_selection(population, fitness, k=3, maximize=False)
         
         # Crossover and Mutation
         offspring = []
@@ -283,8 +283,8 @@ def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter,
         
         offspring = np.array(offspring[:pop_size], dtype=int)
 
-        # --- THAY ĐỔI: ELITISM (Giữ lại cá thể tốt nhất) ---
-        # Đảm bảo cá thể tốt nhất của thế hệ trước được truyền sang thế hệ sau
+        # --- ELITISM: Keep the best individual ---
+        # Ensure the best individual from previous generation is passed to next generation
         offspring[0] = best_solution.copy()
         
         # Evaluate offspring
@@ -295,8 +295,8 @@ def genetic_discrete(obj_func, context, n_dim, pop_size, max_iter,
         fitness = offspring_fitness
         
         # Update best
-        current_best_idx = np.argmax(fitness)
-        if fitness[current_best_idx] > best_fitness:
+        current_best_idx = np.argmin(fitness)
+        if fitness[current_best_idx] < best_fitness:
             best_fitness = fitness[current_best_idx]
             best_solution = population[current_best_idx].copy()
         

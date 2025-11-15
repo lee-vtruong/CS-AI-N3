@@ -148,7 +148,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
     Parameters:
     -----------
     obj_func : function
-        Objective function to maximize (will be negated internally for minimization)
+        Objective function to minimize
     context : dict
         Context dict with problem data
     n_dim : int
@@ -165,7 +165,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
     best_solution : ndarray
         Best solution found (binary vector)
     best_fitness : float
-        Best fitness value (maximization, not negated)
+        Best fitness value (minimization)
     history : list
         History of best fitness values
     """
@@ -176,7 +176,6 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
     # Initialize food sources (solutions)
     food_sources = min_b + (max_b - min_b) * np.random.rand(pop_size, n_dim)
     # Evaluate initial fitness with binarization (numerically stable sigmoid)
-    # Negate fitness for maximization (Knapsack is maximization, but we minimize)
     def stable_sigmoid_binarize(x):
         # Clip x to prevent overflow in exp
         x_clipped = np.clip(x, -500, 500)
@@ -184,7 +183,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
         return (probs > 0.5).astype(int)
     
     fitness = np.array([
-        -obj_func(stable_sigmoid_binarize(sol), context) 
+        obj_func(stable_sigmoid_binarize(sol), context) 
         for sol in food_sources
     ])
     
@@ -220,8 +219,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
             x_clipped = np.clip(x, -500, 500)
             sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (sigmoid_probs > 0.5).astype(int)
-            # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-            new_fitness = -obj_func(binary_solution, context)
+            new_fitness = obj_func(binary_solution, context)
             
             # Greedy selection
             if new_fitness < fitness[i]:
@@ -264,8 +262,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
             x_clipped = np.clip(x, -500, 500)
             sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
             binary_solution = (sigmoid_probs > 0.5).astype(int)
-            # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-            new_fitness = -obj_func(binary_solution, context)
+            new_fitness = obj_func(binary_solution, context)
             
             # Greedy selection
             if new_fitness < fitness[i]:
@@ -292,8 +289,7 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
                 x_clipped = np.clip(x, -500, 500)
                 sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
                 binary_solution = (sigmoid_probs > 0.5).astype(int)
-                # Negate fitness for maximization (Knapsack is maximization, but we minimize)
-                fitness[i] = -obj_func(binary_solution, context)
+                fitness[i] = obj_func(binary_solution, context)
                 trial[i] = 0
                 
                 # Update global best if necessary
@@ -310,9 +306,5 @@ def abc_discrete(obj_func, context, n_dim, pop_size, max_iter, limit=10, **kwarg
     x_clipped = np.clip(x, -500, 500)
     sigmoid_probs = 1 / (1 + np.exp(-x_clipped))
     best_solution = (sigmoid_probs > 0.5).astype(int)
-    # Return negated fitness (convert back to maximization)
-    best_fitness = -best_fitness
-    # Convert history to maximization (all values should be positive)
-    history = [-h for h in history]
     
     return best_solution, best_fitness, history
