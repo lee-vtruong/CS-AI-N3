@@ -117,20 +117,37 @@ def plot_knapsack_convergence():
 
     # Create plots for each problem size
     for n in n_items_list:
-        plt.figure(figsize=(12, 7))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
 
         for algo in algorithms:
             key = f"{algo}_N{n}"
             if key in data:
-                plt.plot(data[key], label=algo,
+                # Left panel: Fitness (negative values, going down)
+                ax1.plot(data[key], label=algo,
+                         linewidth=2, color=colors[algo])
+                # Right panel: Total Value (positive values, going up)
+                # Convert fitness to total_value by negating
+                total_value_data = [-x for x in data[key]]
+                ax2.plot(total_value_data, label=algo,
                          linewidth=2, color=colors[algo])
 
-        plt.xlabel('Iteration', fontsize=12)
-        plt.ylabel('Best Fitness Value (Total Value)', fontsize=12)
-        plt.title(
-            f'Convergence Curves - Knapsack Problem (N={n} items)', fontsize=14, fontweight='bold')
-        plt.legend(loc='lower right', fontsize=10)
-        plt.grid(True, alpha=0.3)
+        # Left panel settings
+        ax1.set_xlabel('Iteration', fontsize=12)
+        ax1.set_ylabel('Best Fitness Value', fontsize=12)
+        ax1.set_title('Fitness (Minimization)', fontsize=13, fontweight='bold')
+        ax1.legend(loc='upper right', fontsize=10)
+        ax1.grid(True, alpha=0.3)
+
+        # Right panel settings
+        ax2.set_xlabel('Iteration', fontsize=12)
+        ax2.set_ylabel('Total Value', fontsize=12)
+        ax2.set_title('Total Value (Maximization)', fontsize=13, fontweight='bold')
+        ax2.legend(loc='lower right', fontsize=10)
+        ax2.grid(True, alpha=0.3)
+
+        # Overall title
+        fig.suptitle(
+            f'Convergence Curves - Knapsack Problem (N={n} items)', fontsize=14, fontweight='bold', y=1.02)
 
         # Save figure to results/ directory
         results_output_dir = os.path.join(os.path.dirname(
