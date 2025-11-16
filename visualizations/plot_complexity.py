@@ -36,7 +36,7 @@ def plot_rastrigin_complexity():
 
     # Extract dimensions and algorithms
     dimensions = [10, 30]
-    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC']
+    algorithms = ['PSO', 'ABC', 'FA', 'CS', 'GA', 'HC', 'SA', 'ACO']
 
     # Color scheme
     colors = {
@@ -45,7 +45,9 @@ def plot_rastrigin_complexity():
         'FA': '#2ca02c',
         'CS': '#d62728',
         'GA': '#9467bd',
-        'HC': '#8c564b'
+        'HC': '#8c564b',
+        'SA': '#7f7f7f',
+        'ACO': '#e377c2'
     }
 
     # Create plots for each dimension

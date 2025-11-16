@@ -8,7 +8,7 @@ import tracemalloc
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from algorithms import pso, abc, fa, cs, ga, hc
+from algorithms import pso, abc, fa, cs, ga, hc, sa, aco
 from problems.rastrigin import rastrigin
 
 # --- Common parameters ---
@@ -24,7 +24,9 @@ ALGO_PARAMS = {
     'fa': {'alpha': 0.5, 'beta0': 1.0, 'gamma': 0.95},
     'cs': {'pa': 0.25, 'beta': 1.5},
     'ga': {'crossover_rate': 0.8, 'mutation_rate': 0.02},
-    'hc': {'step_size': 0.1}
+    'hc': {'step_size': 0.1},
+    'sa': {'initial_temp': 100.0, 'cooling_rate': 0.95, 'min_temp': 0.01},
+    'aco': {'q': 0.1, 'xi': 0.85}
 }
 
 ALGOS = {
@@ -33,7 +35,9 @@ ALGOS = {
     'FA': fa.firefly_continuous,
     'CS': cs.cuckoo_search_continuous,
     'GA': ga.genetic_continuous,
-    'HC': hc.hill_climbing_continuous
+    'HC': hc.hill_climbing_continuous,
+    'SA': sa.simulated_annealing_continuous,
+    'ACO': aco.aco_continuous
 }
 
 # --- Experiment script ---
@@ -69,9 +73,16 @@ for D in DIMENSIONS:
             start_time = time.time()
             
             # All algorithms use _continuous functions
-            # HC doesn't need pop_size parameter
+            # HC and SA don't need pop_size parameter
             if algo_name == 'HC':
                 sol, fit, hist = algo_func(rastrigin, bounds, D, MAX_ITER, **ALGO_PARAMS['hc'])
+            elif algo_name == 'SA':
+                sol, fit, hist = algo_func(rastrigin, bounds, D, MAX_ITER, **ALGO_PARAMS['sa'])
+            elif algo_name == 'ACO':
+                # ACO needs archive_size as separate parameter (typically = n_dim or pop_size)
+                archive_size = max(D, POP_SIZE)  # Use max of dimension and pop_size
+                aco_params = ALGO_PARAMS['aco'].copy()
+                sol, fit, hist = algo_func(rastrigin, bounds, D, archive_size, POP_SIZE, MAX_ITER, **aco_params)
             else:
                 sol, fit, hist = algo_func(rastrigin, bounds, D, POP_SIZE, MAX_ITER, 
                                           **ALGO_PARAMS[algo_name.lower()])
