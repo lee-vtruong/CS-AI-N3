@@ -212,6 +212,15 @@ ALGO_PARAMS = {
     },
     'hc': {
         'step_size': 0.1
+    },
+    'sa': {
+        'initial_temp': 100.0,
+        'cooling_rate': 0.95,
+        'min_temp': 0.01
+    },
+    'aco': {
+        'q': 0.1,
+        'xi': 0.85
     }
 }
 ```
