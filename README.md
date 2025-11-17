@@ -47,20 +47,21 @@ algorithm/
 │   └── single_algo_convergence/  # Individual algorithm convergence plots
 ├── notebooks/          # Jupyter notebooks (if any)
 ├── README.md
-├── FITNESS_EXPLANATION.md
-└── TODO.md
+└── IMPLENMENTATION_SUMMARY.md
 ```
 
 ## 📊 Implemented Algorithms
 
 ### Multi-purpose Algorithms (Continuous & Discrete)
-The following 6 algorithms can solve **BOTH** Rastrigin (continuous) and Knapsack (discrete) problems:
+The following algorithms can solve **BOTH** Rastrigin (continuous) and Knapsack (discrete) problems:
 1. **PSO** - Particle Swarm Optimization
 2. **ABC** - Artificial Bee Colony
 3. **FA** - Firefly Algorithm
 4. **CS** - Cuckoo Search
 5. **GA** - Genetic Algorithm
 6. **HC** - Hill Climbing
+7. **ACO** - Ant Colony Optimization (ACOr for continuous)
+8. **SA** - Simulated Annealing
 
 **Note**: Each algorithm has 2 versions:
 - `_continuous` version: Used for Rastrigin problem (continuous optimization)
@@ -70,9 +71,7 @@ The following 6 algorithms can solve **BOTH** Rastrigin (continuous) and Knapsac
   - HC: Use appropriate neighbor search strategy for each problem type
 
 ### Specialized Algorithms for Discrete Optimization (Knapsack)
-The following 2 algorithms are only implemented for Knapsack problem:
-1. **ACO** - Ant Colony Optimization
-2. **SA** - Simulated Annealing
+Note: In the current codebase, **ACO** and **SA** also have continuous versions and are used for the Rastrigin problem. So, all 8 algorithms are implemented for both problem types.
 
 ## 🔧 Requirements
 
@@ -131,28 +130,28 @@ python visualizations/plot_single_algo_convergence.py
 ## 📈 Experiments Performed
 
 ### Rastrigin Function
-- **Algorithms tested**: 6 algorithms (PSO, ABC, FA, CS, GA, HC)
+- **Algorithms tested**: 8 algorithms (PSO, ABC, FA, CS, GA, HC, SA, ACO)
 - **Dimensions**: 10, 30
-- **Number of runs**: 20 (for each algorithm)
+- **Number of runs**: 10 (for each algorithm)
 - **Population size**: 50
-- **Max iterations**: 1000
+- **Max iterations**: 50
 
 ### Knapsack Problem
 - **Algorithms tested**: 8 algorithms (PSO, ABC, FA, CS, GA, HC, ACO, SA)
 - **Problem sizes**: 20 items, 50 items
-- **Number of runs**: 20 (for each algorithm)
+- **Number of runs**: 10 (for each algorithm)
 - **Population size**: 50
-- **Max iterations**: 1000
+- **Max iterations**: 50
 
 ## 📊 Output Results
 
 ### In the `results/` directory:
 
 **CSV Files (Root directory):**
-- `rastrigin_summary.csv` - Summary statistics (mean, std, time)
+- `rastrigin_summary.csv` - Summary statistics (mean, std, time, avg peak memory)
 - `rastrigin_convergence.csv` - Convergence data by iteration
 - `rastrigin_raw_fitness.csv` - Raw data from multiple runs
-- `knapsack_summary.csv` - Summary statistics
+- `knapsack_summary.csv` - Summary statistics (mean, std, time, avg peak memory)
 - `knapsack_convergence.csv` - Convergence data
 - `knapsack_raw_fitness.csv` - Raw data
 
@@ -227,7 +226,7 @@ Project developed for **Introduction to AI - HCMUS** course
 
 **If encountering import errors:**
 ```bash
-# Run from project_01/ directory
+# Run from the `algorithm/` project root directory
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
